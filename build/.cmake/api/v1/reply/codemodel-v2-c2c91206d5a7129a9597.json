@@ -1,0 +1,218 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "modules/hw",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "modules/hw",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "modules/core",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "modules/core",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "modules/gui",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "modules/gui",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "modules/rfid",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "modules/rfid",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "modules/net",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "modules/net",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "modules/utils",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "modules/utils",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "apps/recum12_app",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "apps/recum12_app",
+					"targetIndexes" : 
+					[
+						0
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					],
+					"name" : "ReCUm12",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 7,
+					"id" : "recum12_app::@7100e6395053c2383b20",
+					"jsonFile" : "target-recum12_app-Debug-def89b99f32bb822fe5e.json",
+					"name" : "recum12_app",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "recum12_core::@90e83aff1e86c0750a9d",
+					"jsonFile" : "target-recum12_core-Debug-d952d46b43b50200ea00.json",
+					"name" : "recum12_core",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "recum12_gui::@80e94ed2326635f41824",
+					"jsonFile" : "target-recum12_gui-Debug-93f13d412a7a4e907d3f.json",
+					"name" : "recum12_gui",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "recum12_hw::@7358431068cca64b0f58",
+					"jsonFile" : "target-recum12_hw-Debug-62a81f514604029df065.json",
+					"name" : "recum12_hw",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "recum12_net::@db36264db049701e3b47",
+					"jsonFile" : "target-recum12_net-Debug-359469d6c664403189ae.json",
+					"name" : "recum12_net",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "recum12_rfid::@685f78e658ecbb40a1cc",
+					"jsonFile" : "target-recum12_rfid-Debug-a321025334109836879f.json",
+					"name" : "recum12_rfid",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "recum12_utils::@d49fe3069cc2fdc3467b",
+					"jsonFile" : "target-recum12_utils-Debug-eb2eed043567b5937388.json",
+					"name" : "recum12_utils",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/ums/ReCUm12/build",
+		"source" : "/home/ums/ReCUm12"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 1
+	}
+}

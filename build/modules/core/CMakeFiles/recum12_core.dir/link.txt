@@ -1,0 +1,2 @@
+/usr/bin/arm-linux-gnueabihf-ar qc librecum12_core.a CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o CMakeFiles/recum12_core.dir/src/UserManager.cpp.o
+/usr/bin/arm-linux-gnueabihf-ranlib librecum12_core.a

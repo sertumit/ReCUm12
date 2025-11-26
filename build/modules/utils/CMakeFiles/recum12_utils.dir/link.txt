@@ -1,0 +1,2 @@
+/usr/bin/arm-linux-gnueabihf-ar qc librecum12_utils.a CMakeFiles/recum12_utils.dir/src/LogManager.cpp.o CMakeFiles/recum12_utils.dir/src/Settings.cpp.o
+/usr/bin/arm-linux-gnueabihf-ranlib librecum12_utils.a

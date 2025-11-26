@@ -1,0 +1,2 @@
+/usr/bin/arm-linux-gnueabihf-ar qc librecum12_hw.a CMakeFiles/recum12_hw.dir/src/PumpInterfaceLvl3.cpp.o CMakeFiles/recum12_hw.dir/src/PumpR07Protocol.cpp.o
+/usr/bin/arm-linux-gnueabihf-ranlib librecum12_hw.a

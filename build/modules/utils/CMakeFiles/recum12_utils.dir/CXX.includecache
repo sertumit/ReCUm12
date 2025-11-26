@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../modules/utils/include/utils/LogManager.h
+
+../modules/utils/include/utils/Settings.h
+
+/home/ums/ReCUm12/modules/utils/src/LogManager.cpp
+utils/LogManager.h
+/home/ums/ReCUm12/modules/utils/src/utils/LogManager.h
+
+/home/ums/ReCUm12/modules/utils/src/Settings.cpp
+utils/Settings.h
+/home/ums/ReCUm12/modules/utils/src/utils/Settings.h
+

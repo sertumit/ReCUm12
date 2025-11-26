@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../modules/rfid/include/rfid/Pn532Reader.h
+
+/home/ums/ReCUm12/modules/rfid/src/Pn532Reader.cpp
+rfid/Pn532Reader.h
+/home/ums/ReCUm12/modules/rfid/src/rfid/Pn532Reader.h
+

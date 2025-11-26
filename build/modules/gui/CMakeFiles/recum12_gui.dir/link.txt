@@ -1,0 +1,2 @@
+/usr/bin/arm-linux-gnueabihf-ar qc librecum12_gui.a CMakeFiles/recum12_gui.dir/src/MainWindow.cpp.o CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.o
+/usr/bin/arm-linux-gnueabihf-ranlib librecum12_gui.a

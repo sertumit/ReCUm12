@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../modules/net/include/net/BlynkClient.h
+
+../modules/net/include/net/RemoteProto.h
+
+/home/ums/ReCUm12/modules/net/src/BlynkClient.cpp
+net/BlynkClient.h
+/home/ums/ReCUm12/modules/net/src/net/BlynkClient.h
+
+/home/ums/ReCUm12/modules/net/src/RemoteProto.cpp
+net/RemoteProto.h
+/home/ums/ReCUm12/modules/net/src/net/RemoteProto.h
+

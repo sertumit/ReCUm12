@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../modules/hw/include/hw/PumpInterfaceLvl3.h
+
+../modules/hw/include/hw/PumpR07Protocol.h
+
+/home/ums/ReCUm12/modules/hw/src/PumpInterfaceLvl3.cpp
+hw/PumpInterfaceLvl3.h
+/home/ums/ReCUm12/modules/hw/src/hw/PumpInterfaceLvl3.h
+
+/home/ums/ReCUm12/modules/hw/src/PumpR07Protocol.cpp
+hw/PumpR07Protocol.h
+/home/ums/ReCUm12/modules/hw/src/hw/PumpR07Protocol.h
+

@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../modules/core/include/core/PumpSaleTracker.h
+
+../modules/core/include/core/UserManager.h
+
+/home/ums/ReCUm12/modules/core/src/PumpSaleTracker.cpp
+core/PumpSaleTracker.h
+/home/ums/ReCUm12/modules/core/src/core/PumpSaleTracker.h
+
+/home/ums/ReCUm12/modules/core/src/UserManager.cpp
+core/UserManager.h
+/home/ums/ReCUm12/modules/core/src/core/UserManager.h
+
