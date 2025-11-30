@@ -1,0 +1,317 @@
+ReCUm12 – RFID / Pn532Reader Modülü Geliştirme Notları
+Sürüm: v12.01.100 – RFID Sprint Baz Dokümanı
+Dosya: Pn532Reader.h / Pn532Reader.cpp
+
+------------------------------------------------------------
+1. Modülün Amacı ve Sorumluluk Sınırları
+------------------------------------------------------------
+Modül: recum12::rfid::Pn532Reader
+
+Amaç:
+- PN532 tabanlı RFID okuyucudan kart UID bilgisini almak.
+- Kart okuma işini, pompa protokolü ve GUI mantığından bağımsız bir şekilde yönetmek.
+- Sadece “istek geldiğinde” kart okuması yapmak (nozzle OUT olayı ile tetiklenen tarafta kullanılacak).
+- Sonuçları üst katmana event/callback olarak bildirmek:
+  - onCardDetected(CardEvent)
+  - onError(std::string)
+
+Bu modül:
+- AUTH/NOAUTH kararını bilmez.
+- Kullanıcı listesi / plaka / yetki bilgisi bilmez.
+- GUI widget’larına (lblmsg, lbluserid, imgvhec) direkt erişmez.
+- Pompa ile (PumpInterfaceLvl3 / PumpR07Protocol) doğrudan konuşmaz.
+
+Bu modül sadece:
+- Donanım + state machine + event kaynağıdır. 
+
+------------------------------------------------------------
+2. Public API Özeti (Pn532Reader.h)
+------------------------------------------------------------
+
+namespace recum12::rfid {
+
+  enum class ReaderState {
+      Idle,
+      WaitingCard,
+      CardPresent,
+      Error
+  };
+
+  struct CardEvent {
+      std::string uid_hex;   // Ör: "04AABBCCDD..."
+      std::string source;    // Ör: "pn532"
+  };
+
+  class Pn532Reader {
+  public:
+      Pn532Reader();
+      ~Pn532Reader();
+
+      bool open(const std::string& device);
+      void close();
+
+      void requestRead();
+      void cancelRead();
+
+      void pollOnce();
+      ReaderState state() const noexcept;
+
+      std::function<void(const CardEvent&)>    onCardDetected;
+      std::function<void(const std::string&)>  onError;
+
+  private:
+      ReaderState   state_{ReaderState::Idle};
+      std::string   device_;
+      nfc_context*  ctx_{nullptr};
+      nfc_device*   dev_{nullptr};
+  };
+
+}
+
+Önemli noktalar:
+- open(device): libnfc ile context + device açar, başarılı ise state = Idle.
+- close(): context + device kapatılır, state = Idle.
+- requestRead(): yalnızca Idle → WaitingCard geçişine izin verir.
+- cancelRead(): WaitingCard veya CardPresent → Idle dönüşü yapar.
+- pollOnce():
+  - Sadece state == WaitingCard iken çalışır.
+  - Kart yoksa sessizce döner (WaitingCard’da kalır).
+  - Kart varsa UID üretir, onCardDetected(event) çağırır, state = CardPresent.
+  - Hata olursa onError(...) + state = Error.
+- state(): mevcut durumu okumak için basit getter.
+
+------------------------------------------------------------
+3. State Makinesi – Nasıl Çalışıyor?
+------------------------------------------------------------
+
+Durumlar:
+- Idle:
+  - Varsayılan durum.
+  - Herhangi bir kart okuma talebi yok.
+  - pollOnce() bu durumda hiçbir şey yapmaz.
+
+- WaitingCard:
+  - Dışarıdan requestRead() çağrıldığında Idle → WaitingCard.
+  - pollOnce(), bu durumda libnfc üzerinden “kart var mı?” sorgusu yapar.
+  - Kart yoksa → WaitingCard’ta kalır, sessizce döner.
+  - Kart varsa:
+    - UID okunur → CardEvent hazırlanır → onCardDetected(event) çağrılır.
+    - state = CardPresent.
+
+- CardPresent:
+  - Bir kartın başarıyla okunduğu durum.
+  - Bu durumda pollOnce() ilk satırda return eder (WaitingCard değil).
+  - Üst katman, işlem tamamlandığında cancelRead() çağırarak Idle’a döndürür.
+
+- Error:
+  - init veya poll sırasında hata olduğunda girilen durum.
+  - pollOnce() bu durumda da WaitingCard olmadığı için hiçbir iş yapmaz.
+  - Üst katman, recovery gerektiğinde tekrar open() çağırarak toparlayabilir.
+
+Talep yokken kart okuma olmaması:
+- requestRead() çağrılmadığı sürece state Idle veya Error’da kalır.
+- Bu sayede “nozzle OUT yoksa RFID taraması yok” prensibi korunur.
+
+------------------------------------------------------------
+4. Diğer Modüllerle Entegrasyon Modeli
+------------------------------------------------------------
+
+4.1. hw::PumpR07Protocol
+- Görev: RS485 üzerinden pompa ile çalışan R07 protokolünün frame seviyesinde yönetimi.
+- Durum: Baz seviye implementasyon tamamlandı (frame builder/parser, CD1, MIN poll/ack ve iskelet parseFrame).
+- RFID modülü ile doğrudan konuşmaz.
+- Ortak nokta:
+  - Nozzle olayları (nozzle IN/OUT) PumpR07Protocol → PumpInterfaceLvl3 → core/GUI’ye iletilecek.
+  - Nozzle OUT olayı, RFID tarafında requestRead() tetiklemesi için bir “trigger” kaynağıdır.
+
+4.2. hw::PumpInterfaceLvl3
+- Görev: Protokol (PumpR07Protocol) ile üst katman (core/gui) arasında domain seviyesinde bir arayüz sağlamak.
+- Başka tarafta geliştirilmeye başlandı.
+- RFID ile ilişkisi:
+  - Nozzle OUT / nozzle IN / satış bitti vb. olaylar:
+    - PumpInterfaceLvl3’ten core/gui tarafına callback’ler ile aktarılacak.
+  - Nozzle OUT → core tarafında “kart okuma gereksinimi” doğurur → pn532.requestRead().
+  - Yetkili kart bulunduğunda:
+    - core, PumpInterfaceLvl3 üzerinden pompa için AUTH komutlarını tetikleyecek.
+  - Yetkisiz kart → pompa tarafına AUTH gönderilmeyecek.
+
+Bu sayede:
+- RFID modülünün pompaya doğrudan bağımlılığı yok.
+- PumpInterfaceLvl3 sadece “kart sonucu” bilgisini üst katmandan alır (AuthController benzeri).
+
+4.3. core::UserManager
+- Görev: kullanıcılar, RFID UID’leri, plakalar ve yetkiler.
+- RFID entegrasyonunda kritik rol:
+  - onCardDetected(CardEvent ev) çağrıldığında:
+    - UserManager üzerinden:
+      - ev.uid_hex → user kaydı var mı?
+  - Eğer yetkili kullanıcı:
+    - Kullanıcının plaka/ID bilgisi GUI’ye aktarılır.
+    - Pompa için AUTH tetiklenir (PumpInterfaceLvl3).
+  - Eğer yetkisiz:
+    - GUI’de “Yetkisiz Kart” mesajı.
+    - Pompa tarafında AUTH gönderilmez.
+
+4.4. GUI: gui::MainWindow + rs485_gui_adapter
+- Görev:
+  - GTK/Glade tabanlı kullanıcı arayüzü.
+  - lblmsg, lbluserid, imgvhec vb. widget’ları yönetir.
+  - rs485_gui_adapter, pompa tarafı ile GUI olaylarını köprüler.
+- RFID ile entegrasyon:
+  - onCardDetected:
+    - UserManager sonucu ile birlikte:
+      - Yetkili:
+        - lblmsg = “Yetkili Dolum Bekleniyor”
+        - lbluserid = kullanıcı/plaka
+        - imgvhec = “Yetkili/Ready” ikonu
+      - Yetkisiz:
+        - lblmsg = “Yetkisiz Kart”
+        - 3 sn sonra lblmsg = “İşlem Yok”
+        - imgvhec = “Error/Unauthorized” ikonu
+  - onError:
+    - lblmsg = “RFID Hatası: ...”
+    - LogManager üzerinden log kaydı.
+
+4.5. utils::LogManager / Settings
+- LogManager:
+  - RFID hatalarını ve kart olaylarını (isteğe bağlı) log dosyalarına yazabilir.
+- Settings:
+  - RFID ile ilgili ayarlar (cihaz ismi, timeout süresi, aktif/pasif flag’i vb.) buradan okunabilir.
+
+4.6. net::RemoteProto / BlynkClient
+- İleride:
+  - Okunan kart UID’leri veya yapılan satışlar uzaktan izleme sistemine gönderilebilir.
+  - RFID’ye doğrudan bağımlı olmaz; sadece core/pump katmanından gelen “event” verisini yayar.
+
+------------------------------------------------------------
+5. Sprint Planına Göre Kalan İşler
+------------------------------------------------------------
+
+Bu doküman, RFID modülünü mevcut sprint bağlamında şuraya yerleştiriyor:
+
+Mevcut durumda:
+- hw::PumpR07Protocol:
+  - Frame builder/parser, CD1, MIN poll/ack iskeleti tamam.
+- hw::PumpInterfaceLvl3:
+  - Başka bir kanatta geliştirilmeye başlandı (nozzle/out olayları vs.).
+- rfid::Pn532Reader:
+  - State machine + libnfc tabanlı okuma implementasyonu hazır.
+  - Hata / kart durumu için callback event’leri tanımlı.
+
+Kalan ana işler (RfID tarafı ilgili):
+
+1) CMake / Build Entegrasyonu:
+   - modules/rfid/CMakeLists.txt içine libnfc link eklenmesi:
+     - target_link_libraries(recum12_rfid PRIVATE nfc)
+   - Gerekirse pkg-config ile nfc kütüphanesinin bulunması.
+
+2) Core Katmanı – AuthController (veya benzeri) tasarımı:
+   - Sorumluluk:
+     - PumpInterfaceLvl3’ten gelen:
+       - nozzle OUT
+       - nozzle IN / satış bitti
+       - pump state değişiklikleri
+     - Pn532Reader’dan gelen:
+       - onCardDetected(CardEvent)
+       - onError(std::string)
+     - UserManager ile:
+       - UID → user & plaka & yetki bilgisi sorgusu
+     - PumpInterfaceLvl3 ile:
+       - Yetkili → AUTH komut akışı
+       - Yetkisiz → NOAUTH / sadece GUI uyarısı
+
+   - Akış örneği:
+     - nozzle OUT:
+       - AuthController → pn532.requestRead()
+     - kart okundu (onCardDetected):
+       - user = UserManager::findByUid(uid_hex)
+       - var & yetkili:
+         - GUI: Yetkili Dolum Bekleniyor + lbluserid + imgvhec
+         - PumpInterfaceLvl3: authorize/preset komutları
+       - yok veya yetkisiz:
+         - GUI: Yetkisiz Kart (3 sn) → sonra İşlem Yok
+     - nozzle IN veya timeout:
+       - AuthController → pn532.cancelRead()
+       - GUI: İşlem Yok mesajına dönüş.
+
+3) GUI Zamanlama / Mesaj Akışı:
+   - “Yetkisiz Kart” mesajının 3 sn gösterilmesi:
+     - GUI tarafında timer (g_timeout_add veya benzeri) ile:
+       - 3 sn sonra lblmsg = “İşlem Yok”
+   - “Yetkili Dolum Bekleniyor” durumda:
+       - Pompa state = dolum başladı → GUI mesajı güncellenecek.
+       - Dolum bitti / nozzle IN → tekrar idle mesajı.
+
+4) Error / Recovery Senaryoları:
+   - Pn532Reader state == Error:
+     - GUI’de hata mesajı/log.
+     - AuthController, belirli bir süre sonra:
+       - pn532.close()
+       - pn532.open(device) ile yeniden deneme.
+   - Libnfc / donanım bağlantı problemlerinde sistemin kilitlenmemesi için:
+       - pollOnce() zaten hızlı fail edecek.
+       - Thread kullanımı gerekirse ileride ayrıca planlanır.
+
+5) Test and Doğrulama:
+   - Bağımsız test:
+     - Küçük bir test programında:
+       - Pn532Reader’ı aç
+       - requestRead()
+       - döngüde pollOnce() çağır
+       - onCardDetected / onError çıktısını terminalde yaz.
+   - Entegre test:
+       - Gerçek pompa + nozzle OUT + kart okuma + yetkili/ yetkisiz senaryoları.
+       - GUI üzerinde mesajların ve ikonların kontrolü.
+
+------------------------------------------------------------
+6. Bağımsız Hazırlıkla Güvenli İlerlenebilecek Adımlar
+------------------------------------------------------------
+
+Aşağıdaki adımlar, diğer sprint’lerle çakışmadan, bağımsız olarak hazırlanabilir:
+
+1) CMake tarafı:
+   - modules/rfid/CMakeLists.txt içinde libnfc link ayarını yapmak.
+   - Gerekirse CMake option’ı ile “RFID support on/off” flag’i eklemek.
+
+2) UserManager Genişletme:
+   - UID → user eşlemesini yönetmek için:
+     - RFID UID alanı
+     - Plaka / kullanıcı adı / yetki seviyesi alanları
+   - Basit bir “demo user listesi” oluşturmak (ini/json vs. veya Settings üzerinden).
+
+3) GUI’daki mesaj/ikon taslağını netleştirmek:
+   - lblmsg için:
+     - “İşlem Yok”
+     - “Yetkili Dolum Bekleniyor”
+     - “Yetkisiz Kart”
+     - “RFID Hatası: …”
+   - lbluserid için:
+     - Kullanıcı/plaka gösterimi.
+   - imgvhec:
+     - Idle, Yetkili, Yetkisiz, Hata icon setleri.
+
+4) Loglama:
+   - LogManager üzerinden:
+     - RFID hata mesajları
+     - Kart UID logları (debug modu için, güvenlik/politikaya göre aç/kapa).
+
+5) Dokümantasyon:
+   - Bu dosyanın içeriğini temel alarak:
+     - “RFID / Auth akış diyagramı”
+     - “Nozzle OUT → Kart → AUTH/NOAUTH → Dolum → Nozzle IN” zaman çizelgesi
+   - İleride sprint raporlarına eklenebilir.
+
+------------------------------------------------------------
+7. Özet
+------------------------------------------------------------
+
+- Pn532Reader modülü:
+  - Tek sorumluluk: PN532’den kart okuma + event üretme.
+  - Tasarım olarak AUTH/GUI/pompa logic’inden bağımsız.
+- hw::PumpR07Protocol ve hw::PumpInterfaceLvl3:
+  - Pompa ve RS485 katmanı için temel altyapı hazır / gelişiyor.
+  - RFID modülü sadece nozzle olayını “kart okuma tetikleyicisi” olarak kullanacak.
+- Bu doküman:
+  - Gelecek sprintlerde, modüller arası entegrasyon sırasında
+  - “Kim neyi yapacak, sınırlar nerede?” sorusunu netleştirmek,
+  - Ve bağımsız yapılabilecek hazırlıkları göstermek için referans bazdır.

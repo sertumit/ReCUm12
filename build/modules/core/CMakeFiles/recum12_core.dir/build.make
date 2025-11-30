@@ -76,9 +76,22 @@ include modules/core/CMakeFiles/recum12_core.dir/progress.make
 # Include the compile flags for this target's objects.
 include modules/core/CMakeFiles/recum12_core.dir/flags.make
 
+modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o: modules/core/CMakeFiles/recum12_core.dir/flags.make
+modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o: ../modules/core/src/PumpRuntimeState.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o"
+	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o -c /home/ums/ReCUm12/modules/core/src/PumpRuntimeState.cpp
+
+modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.i"
+	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ums/ReCUm12/modules/core/src/PumpRuntimeState.cpp > CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.i
+
+modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.s"
+	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ums/ReCUm12/modules/core/src/PumpRuntimeState.cpp -o CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.s
+
 modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o: modules/core/CMakeFiles/recum12_core.dir/flags.make
 modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o: ../modules/core/src/PumpSaleTracker.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o"
 	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o -c /home/ums/ReCUm12/modules/core/src/PumpSaleTracker.cpp
 
 modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.i: cmake_force
@@ -91,7 +104,7 @@ modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.s: cmake_force
 
 modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.o: modules/core/CMakeFiles/recum12_core.dir/flags.make
 modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.o: ../modules/core/src/UserManager.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.o"
 	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/recum12_core.dir/src/UserManager.cpp.o -c /home/ums/ReCUm12/modules/core/src/UserManager.cpp
 
 modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.i: cmake_force
@@ -102,19 +115,36 @@ modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/recum12_core.dir/src/UserManager.cpp.s"
 	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ums/ReCUm12/modules/core/src/UserManager.cpp -o CMakeFiles/recum12_core.dir/src/UserManager.cpp.s
 
+modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o: modules/core/CMakeFiles/recum12_core.dir/flags.make
+modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o: ../modules/core/src/RfidAuthController.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o"
+	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o -c /home/ums/ReCUm12/modules/core/src/RfidAuthController.cpp
+
+modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.i"
+	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ums/ReCUm12/modules/core/src/RfidAuthController.cpp > CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.i
+
+modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.s"
+	cd /home/ums/ReCUm12/build/modules/core && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ums/ReCUm12/modules/core/src/RfidAuthController.cpp -o CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.s
+
 # Object files for target recum12_core
 recum12_core_OBJECTS = \
+"CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o" \
 "CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o" \
-"CMakeFiles/recum12_core.dir/src/UserManager.cpp.o"
+"CMakeFiles/recum12_core.dir/src/UserManager.cpp.o" \
+"CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o"
 
 # External object files for target recum12_core
 recum12_core_EXTERNAL_OBJECTS =
 
+modules/core/librecum12_core.a: modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o
 modules/core/librecum12_core.a: modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o
 modules/core/librecum12_core.a: modules/core/CMakeFiles/recum12_core.dir/src/UserManager.cpp.o
+modules/core/librecum12_core.a: modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o
 modules/core/librecum12_core.a: modules/core/CMakeFiles/recum12_core.dir/build.make
 modules/core/librecum12_core.a: modules/core/CMakeFiles/recum12_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library librecum12_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library librecum12_core.a"
 	cd /home/ums/ReCUm12/build/modules/core && $(CMAKE_COMMAND) -P CMakeFiles/recum12_core.dir/cmake_clean_target.cmake
 	cd /home/ums/ReCUm12/build/modules/core && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/recum12_core.dir/link.txt --verbose=$(VERBOSE)
 

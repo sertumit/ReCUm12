@@ -1,14 +1,22 @@
-# Build
-/build/
-
-# Logs
-/logs/
-/backups/
-
-# CMake
-CMakeCache.txt
+# Build çıktıları
+build/
+cmake-build-*/
 CMakeFiles/
-cmake-install.cmake
+CMakeCache.txt
+Makefile
+*.o
+*.a
+*.so
 
-# VS Code
-#.vscode/
+# Qt / Gtk / IDE ara dosyaları
+*.user
+*.swp
+*.swo
+*.log
+
+# Saha log / zip arşivleri
+logs/
+*.zip
+
+# Yerel config override'ları (örneğin gelecekte)
+configs/local-*.json

@@ -102,19 +102,34 @@ modules/gui/CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.s"
 	cd /home/ums/ReCUm12/build/modules/gui && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ums/ReCUm12/modules/gui/src/rs485_gui_adapter.cpp -o CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.s
 
+modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o: modules/gui/CMakeFiles/recum12_gui.dir/flags.make
+modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o: ../modules/gui/src/StatusMessageController.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o"
+	cd /home/ums/ReCUm12/build/modules/gui && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o -c /home/ums/ReCUm12/modules/gui/src/StatusMessageController.cpp
+
+modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.i"
+	cd /home/ums/ReCUm12/build/modules/gui && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/ums/ReCUm12/modules/gui/src/StatusMessageController.cpp > CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.i
+
+modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.s"
+	cd /home/ums/ReCUm12/build/modules/gui && /usr/bin/arm-linux-gnueabihf-g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/ums/ReCUm12/modules/gui/src/StatusMessageController.cpp -o CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.s
+
 # Object files for target recum12_gui
 recum12_gui_OBJECTS = \
 "CMakeFiles/recum12_gui.dir/src/MainWindow.cpp.o" \
-"CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.o"
+"CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.o" \
+"CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o"
 
 # External object files for target recum12_gui
 recum12_gui_EXTERNAL_OBJECTS =
 
 modules/gui/librecum12_gui.a: modules/gui/CMakeFiles/recum12_gui.dir/src/MainWindow.cpp.o
 modules/gui/librecum12_gui.a: modules/gui/CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.o
+modules/gui/librecum12_gui.a: modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o
 modules/gui/librecum12_gui.a: modules/gui/CMakeFiles/recum12_gui.dir/build.make
 modules/gui/librecum12_gui.a: modules/gui/CMakeFiles/recum12_gui.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library librecum12_gui.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX static library librecum12_gui.a"
 	cd /home/ums/ReCUm12/build/modules/gui && $(CMAKE_COMMAND) -P CMakeFiles/recum12_gui.dir/cmake_clean_target.cmake
 	cd /home/ums/ReCUm12/build/modules/gui && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/recum12_gui.dir/link.txt --verbose=$(VERBOSE)
 

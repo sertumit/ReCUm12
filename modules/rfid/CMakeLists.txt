@@ -8,3 +8,5 @@ target_include_directories(recum12_rfid
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+target_link_libraries(recum12_rfid PRIVATE nfc)

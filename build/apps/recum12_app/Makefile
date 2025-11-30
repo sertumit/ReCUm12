@@ -144,6 +144,33 @@ recum12_app/fast:
 	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f apps/recum12_app/CMakeFiles/recum12_app.dir/build.make apps/recum12_app/CMakeFiles/recum12_app.dir/build
 .PHONY : recum12_app/fast
 
+src/AppRuntime.o: src/AppRuntime.cpp.o
+
+.PHONY : src/AppRuntime.o
+
+# target to build an object file
+src/AppRuntime.cpp.o:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f apps/recum12_app/CMakeFiles/recum12_app.dir/build.make apps/recum12_app/CMakeFiles/recum12_app.dir/src/AppRuntime.cpp.o
+.PHONY : src/AppRuntime.cpp.o
+
+src/AppRuntime.i: src/AppRuntime.cpp.i
+
+.PHONY : src/AppRuntime.i
+
+# target to preprocess a source file
+src/AppRuntime.cpp.i:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f apps/recum12_app/CMakeFiles/recum12_app.dir/build.make apps/recum12_app/CMakeFiles/recum12_app.dir/src/AppRuntime.cpp.i
+.PHONY : src/AppRuntime.cpp.i
+
+src/AppRuntime.s: src/AppRuntime.cpp.s
+
+.PHONY : src/AppRuntime.s
+
+# target to generate assembly for a file
+src/AppRuntime.cpp.s:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f apps/recum12_app/CMakeFiles/recum12_app.dir/build.make apps/recum12_app/CMakeFiles/recum12_app.dir/src/AppRuntime.cpp.s
+.PHONY : src/AppRuntime.cpp.s
+
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -180,6 +207,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... recum12_app"
+	@echo "... src/AppRuntime.o"
+	@echo "... src/AppRuntime.i"
+	@echo "... src/AppRuntime.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

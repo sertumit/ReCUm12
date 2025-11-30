@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/arm-linux-gnueabihf-g++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/ums/ReCUm12/modules/core/include
+CXX_INCLUDES = -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include
 
 CXX_FLAGS = -g -std=gnu++17
 

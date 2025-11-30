@@ -144,6 +144,33 @@ recum12_core/fast:
 	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/build
 .PHONY : recum12_core/fast
 
+src/PumpRuntimeState.o: src/PumpRuntimeState.cpp.o
+
+.PHONY : src/PumpRuntimeState.o
+
+# target to build an object file
+src/PumpRuntimeState.cpp.o:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o
+.PHONY : src/PumpRuntimeState.cpp.o
+
+src/PumpRuntimeState.i: src/PumpRuntimeState.cpp.i
+
+.PHONY : src/PumpRuntimeState.i
+
+# target to preprocess a source file
+src/PumpRuntimeState.cpp.i:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.i
+.PHONY : src/PumpRuntimeState.cpp.i
+
+src/PumpRuntimeState.s: src/PumpRuntimeState.cpp.s
+
+.PHONY : src/PumpRuntimeState.s
+
+# target to generate assembly for a file
+src/PumpRuntimeState.cpp.s:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.s
+.PHONY : src/PumpRuntimeState.cpp.s
+
 src/PumpSaleTracker.o: src/PumpSaleTracker.cpp.o
 
 .PHONY : src/PumpSaleTracker.o
@@ -170,6 +197,33 @@ src/PumpSaleTracker.s: src/PumpSaleTracker.cpp.s
 src/PumpSaleTracker.cpp.s:
 	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.s
 .PHONY : src/PumpSaleTracker.cpp.s
+
+src/RfidAuthController.o: src/RfidAuthController.cpp.o
+
+.PHONY : src/RfidAuthController.o
+
+# target to build an object file
+src/RfidAuthController.cpp.o:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o
+.PHONY : src/RfidAuthController.cpp.o
+
+src/RfidAuthController.i: src/RfidAuthController.cpp.i
+
+.PHONY : src/RfidAuthController.i
+
+# target to preprocess a source file
+src/RfidAuthController.cpp.i:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.i
+.PHONY : src/RfidAuthController.cpp.i
+
+src/RfidAuthController.s: src/RfidAuthController.cpp.s
+
+.PHONY : src/RfidAuthController.s
+
+# target to generate assembly for a file
+src/RfidAuthController.cpp.s:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.s
+.PHONY : src/RfidAuthController.cpp.s
 
 src/UserManager.o: src/UserManager.cpp.o
 
@@ -207,9 +261,15 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... recum12_core"
+	@echo "... src/PumpRuntimeState.o"
+	@echo "... src/PumpRuntimeState.i"
+	@echo "... src/PumpRuntimeState.s"
 	@echo "... src/PumpSaleTracker.o"
 	@echo "... src/PumpSaleTracker.i"
 	@echo "... src/PumpSaleTracker.s"
+	@echo "... src/RfidAuthController.o"
+	@echo "... src/RfidAuthController.i"
+	@echo "... src/RfidAuthController.s"
 	@echo "... src/UserManager.o"
 	@echo "... src/UserManager.i"
 	@echo "... src/UserManager.s"

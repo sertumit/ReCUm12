@@ -1,0 +1,195 @@
+/* style.css */
+window#MainWindow {
+  border: 1px solid #333333;
+  }
+  /* Ana içerik kutusu (GtkBox) stili: Name “home-box” */
+#home-box {
+  background-image: url("ReCUmv10.png");
+  /*background-color: rgb(11, 64, 79);*/
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+/*grid, box {
+  border:1px solid #dddddd
+}*/
+#head-grid,
+/*#time-grid,*/
+/*#conn-grid,*/
+#modver-grid,
+#time-grid,
+#user-grid,
+#process-grid,
+#durumhead-grid,
+#msg-grid,
+#footer-grid,
+#footerrecs-grid,
+#footvech-grid,
+/*#footip-grid,*/
+#foodcount-grid {
+    border:1px solid #dddddd
+}
+#conn-grid {
+    font-weight: bold;
+    /*background-color: rgba(255, 255, 255, 1);*/
+}
+
+#vers-label {
+  font-family: Arial, sans-serif;
+  font-size: 19px; /*org 14*/
+  font-weight: bold;
+  color: #ffffff;
+}
+
+#date-label,
+#time-label,
+#model-label {
+  font-family: Arial, sans-serif;
+  font-size: 24px; /*org 14*/
+  font-weight: bold;
+  color: #ffffff;
+}
+
+label.IP-label {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+#level-label {
+  font-family: Arial, sans-serif;
+  font-size: 74px; /*org 16*/
+  font-weight: bold;
+  color: #ffffff;
+}
+#levlbl-label {
+  font-family: Arial, sans-serif;
+  font-size: 42px; /*org 16*/
+  font-weight: bold;
+  color: #ffffff;
+}
+
+#pbarhead-label {
+  font-family: Arial, sans-serif;
+  font-size: 24px; /*org 16*/
+  font-weight: bold;
+  color: #ffffff;
+}
+
+#userid-label,
+#user-label {
+  font-family: Arial, sans-serif;
+  font-size: 36px; /*org 16*/
+  font-weight: bold;
+  color: #ffffff;
+}
+#msg-label {
+  font-family: Arial, sans-serif;
+  font-size: 24px;/*org 14*/
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 1);
+  color: #000000;
+  /*height: 35px;*/
+  min-height: 45px;
+}
+
+/* Last Fuel label stili */
+label.last-fuel {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  color: #ffffff;
+}
+/* Genel label stili */
+label.my-label {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  color: #ffffff;
+}
+label {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  color: #000000;
+}
+/* Temel 3B buton stili */
+#tbtn-start {
+  /* Üstten aşağıya doğru hafif bir gradient */
+  /*background-image: linear-gradient(to bottom, #f0f0f0, #d0d0d0);*/
+  /* İnce, koyu bir sınır */
+  border: 1px solid #888;
+  /* Hafif yuvarlak köşeler */
+  border-radius: 4px;
+  /* Metin rengi */
+  color: #000;
+  /* İçten gelen hafif ışık vurgusu */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.6),   /* üst iç gölge (parlaklık) */
+    inset 0 -1px 0 rgba(0,0,0,0.2),        /* alt iç gölge */
+    0 2px 4px rgba(0,0,0,0.3);             /* dış gölge (kabartma) */
+  /* Buton boyutu ve dolgu (isteğe bağlı) */
+  padding: 6px 12px;
+}
+
+/* Hover (fare üstünde) */
+#tbtn-start:hover {
+  background-image: linear-gradient(to bottom, #ffffff, #e0e0e0);
+}
+
+/* Basılıyken (dolgu efekti) */
+/*#tbtn-start:active {*/
+#tbtn-start:checked {
+  /*background-image: linear-gradient(to bottom, #c0c0c0, #a0a0a0);*/
+  background-color: #58ed26;
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.3); /* içe doğru gölge */
+}
+#btn-reset {
+  /* Üstten aşağıya doğru hafif bir gradient */
+  /*background-image: linear-gradient(to bottom, #f0f0f0, #d0d0d0);*/
+  /* İnce, koyu bir sınır */
+  border: 1px solid #888;
+  /* Hafif yuvarlak köşeler */
+  border-radius: 4px;
+  /* Metin rengi */
+  color: #000;
+  /* İçten gelen hafif ışık vurgusu */
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.6),   /* üst iç gölge (parlaklık) */
+    inset 0 -1px 0 rgba(0,0,0,0.2),        /* alt iç gölge */
+    0 2px 4px rgba(0,0,0,0.3);             /* dış gölge (kabartma) */
+  /* Buton boyutu ve dolgu (isteğe bağlı) */
+  padding: 6px 12px;
+}
+
+/* Hover (fare üstünde) */
+#btn-reset:hover {
+  background-image: linear-gradient(to bottom, #ffffff, #e0e0e0);
+}
+
+/* Basılıyken (dolgu efekti) */
+/*#tbtn-start:active {*/
+#btn-reset:checked {
+  /*background-image: linear-gradient(to bottom, #c0c0c0, #a0a0a0);*/
+  background-color: #58ed26;
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.3); /* içe doğru gölge */
+}
+
+
+/* Eğer metin rengi değiştirmek isterseniz */
+#level-pbar {
+  font-size: 24px; /*org 16*/
+  font-weight: bold;
+  color: #ffffff;                /* Text rengi */
+  min-height: 35px;
+}
+/* Tüm ProgressBar’ın arka planı (trough) */
+#level-pbar trough {
+  background-color: #dddddd;     /* Trough rengi (açık gri) */
+  min-height: 35px;
+}
+
+/* Dolu kısmın rengi (bar) */
+#level-pbar trough progress {
+  background-color: #23e82a;     /* Dolu bar rengi (yeşil) */
+  min-height: 35px;
+}

@@ -171,6 +171,33 @@ src/MainWindow.cpp.s:
 	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/gui/CMakeFiles/recum12_gui.dir/build.make modules/gui/CMakeFiles/recum12_gui.dir/src/MainWindow.cpp.s
 .PHONY : src/MainWindow.cpp.s
 
+src/StatusMessageController.o: src/StatusMessageController.cpp.o
+
+.PHONY : src/StatusMessageController.o
+
+# target to build an object file
+src/StatusMessageController.cpp.o:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/gui/CMakeFiles/recum12_gui.dir/build.make modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o
+.PHONY : src/StatusMessageController.cpp.o
+
+src/StatusMessageController.i: src/StatusMessageController.cpp.i
+
+.PHONY : src/StatusMessageController.i
+
+# target to preprocess a source file
+src/StatusMessageController.cpp.i:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/gui/CMakeFiles/recum12_gui.dir/build.make modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.i
+.PHONY : src/StatusMessageController.cpp.i
+
+src/StatusMessageController.s: src/StatusMessageController.cpp.s
+
+.PHONY : src/StatusMessageController.s
+
+# target to generate assembly for a file
+src/StatusMessageController.cpp.s:
+	cd /home/ums/ReCUm12/build && $(MAKE) $(MAKESILENT) -f modules/gui/CMakeFiles/recum12_gui.dir/build.make modules/gui/CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.s
+.PHONY : src/StatusMessageController.cpp.s
+
 src/rs485_gui_adapter.o: src/rs485_gui_adapter.cpp.o
 
 .PHONY : src/rs485_gui_adapter.o
@@ -210,6 +237,9 @@ help:
 	@echo "... src/MainWindow.o"
 	@echo "... src/MainWindow.i"
 	@echo "... src/MainWindow.s"
+	@echo "... src/StatusMessageController.o"
+	@echo "... src/StatusMessageController.i"
+	@echo "... src/StatusMessageController.s"
 	@echo "... src/rs485_gui_adapter.o"
 	@echo "... src/rs485_gui_adapter.i"
 	@echo "... src/rs485_gui_adapter.s"

@@ -1,0 +1,58 @@
+ReCUm12 – Sprint Planı ve Mevcut Durum (v12.01.100 R2)
+
+1. Genel Tanım
+- Bu belge, mevcut sprintin tam özetini ve yeni mesaj ekranında devam edebilmek için gereken başlangıç bilgisini içerir.
+
+2. Proje Bilgileri
+- Proje adı: ReCUm12
+- Uygulama: recum12_app
+- Sürüm: v12.01.100 R2
+- Ana geliştirme dili: C++17
+- Yapı sistemi: CMake
+- Çalışma ortamı: Raspberry Pi 3B (VS Code Remote-SSH)
+
+3. Protokol Katmanı (PumpR07Protocol) Durumu
+Tamamlananlar:
+- CRC16-IBM hesaplama
+- BCD encode/decode
+- R07 frame builder:
+  * makeR07Frame
+  * makeR07MinFrame
+  * makeR07MinPoll, makeR07MinAck
+  * makeR07Cd1Frame (CD1/Status)
+- R07 frame parser (parseR07Frame)
+- PumpR07Protocol sınıf arayüzü:
+  * makeStatusPollFrame
+  * makePresetVolumeFrame
+  * makeTotalCountersFrame
+  * makeMinPoll / makeMinAck
+  * parseFrame
+  * onStatus / onFill / onTotals / onNozzle callback’leri
+- Gerçek implementasyonlar:
+  * makeStatusPollFrame → makeR07Cd1Frame
+  * makeMinPoll → makeR07MinPoll
+  * makeMinAck → makeR07MinAck
+  * parseFrame → parseR07Frame çağrısı + valid / crc_ok / is_min_frame filtresi + switch iskeleti
+
+4. Dosya Disiplini
+- Her değişiklik öncesi:
+  1) Kullanıcı güncel dosyayı yükler.
+  2) Asistan SHA256 / line / byte hesaplar.
+  3) Kullanıcı onaylar.
+  4) Asistan minimal diff gönderir.
+- Hiçbir tam dosya yeniden yazılmayacak.
+
+5. Şu Anki Sprint Seviyesi (R2)
+- PumpR07Protocol.cpp içinde outgoing taraf tamamlandı.
+- incoming tarafın giriş filtresi tamamlandı.
+- Sırada: switch (cmd) içine ilk gerçek case’lerin eklenmesi (STATUS, TOTALS, nozzle).
+
+6. Yeni Mesaj Ekranında Başlangıç İçin Talimat
+Yeni ekrana şu mesajla başlayabilirsin:
+
+“ReCUm12 – v12.01.100 R2 sprintine devam ediyorum. 
+PumpR07Protocol.cpp ve PumpR07Protocol.h dosyaları için SHA hesapla. 
+Sonra parseFrame içindeki switch-case kısmına ilk gerçek implementasyonu ekleyelim.”
+
+Bu mesajı yazman, süreci kaldığımız yerden güvenli şekilde devam ettirmemizi sağlar.
+

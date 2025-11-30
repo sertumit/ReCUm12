@@ -11,23 +11,38 @@
 },
 {
   "directory": "/home/ums/ReCUm12/build/modules/core",
-  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/core/include -g -std=gnu++17 -o CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o -c /home/ums/ReCUm12/modules/core/src/PumpSaleTracker.cpp",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o -c /home/ums/ReCUm12/modules/core/src/PumpRuntimeState.cpp",
+  "file": "/home/ums/ReCUm12/modules/core/src/PumpRuntimeState.cpp"
+},
+{
+  "directory": "/home/ums/ReCUm12/build/modules/core",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o -c /home/ums/ReCUm12/modules/core/src/PumpSaleTracker.cpp",
   "file": "/home/ums/ReCUm12/modules/core/src/PumpSaleTracker.cpp"
 },
 {
   "directory": "/home/ums/ReCUm12/build/modules/core",
-  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/core/include -g -std=gnu++17 -o CMakeFiles/recum12_core.dir/src/UserManager.cpp.o -c /home/ums/ReCUm12/modules/core/src/UserManager.cpp",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_core.dir/src/UserManager.cpp.o -c /home/ums/ReCUm12/modules/core/src/UserManager.cpp",
   "file": "/home/ums/ReCUm12/modules/core/src/UserManager.cpp"
 },
 {
+  "directory": "/home/ums/ReCUm12/build/modules/core",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o -c /home/ums/ReCUm12/modules/core/src/RfidAuthController.cpp",
+  "file": "/home/ums/ReCUm12/modules/core/src/RfidAuthController.cpp"
+},
+{
   "directory": "/home/ums/ReCUm12/build/modules/gui",
-  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/gui/include -g -std=gnu++17 -o CMakeFiles/recum12_gui.dir/src/MainWindow.cpp.o -c /home/ums/ReCUm12/modules/gui/src/MainWindow.cpp",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/gui/include -I/usr/include/gtkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gtkmm-3.0/include -I/usr/include/atkmm-1.6 -I/usr/include/gtk-3.0/unix-print -I/usr/include/gdkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gdkmm-3.0/include -I/usr/include/giomm-2.4 -I/usr/lib/arm-linux-gnueabihf/giomm-2.4/include -I/usr/include/pangomm-1.4 -I/usr/lib/arm-linux-gnueabihf/pangomm-1.4/include -I/usr/include/glibmm-2.4 -I/usr/lib/arm-linux-gnueabihf/glibmm-2.4/include -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib/arm-linux-gnueabihf/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/fribidi -I/usr/include/harfbuzz -I/usr/include/atk-1.0 -I/usr/include/cairomm-1.0 -I/usr/lib/arm-linux-gnueabihf/cairomm-1.0/include -I/usr/include/pixman-1 -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/sigc++-2.0 -I/usr/lib/arm-linux-gnueabihf/sigc++-2.0/include -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib/arm-linux-gnueabihf/glib-2.0/include -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_gui.dir/src/MainWindow.cpp.o -c /home/ums/ReCUm12/modules/gui/src/MainWindow.cpp",
   "file": "/home/ums/ReCUm12/modules/gui/src/MainWindow.cpp"
 },
 {
   "directory": "/home/ums/ReCUm12/build/modules/gui",
-  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/gui/include -g -std=gnu++17 -o CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.o -c /home/ums/ReCUm12/modules/gui/src/rs485_gui_adapter.cpp",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/gui/include -I/usr/include/gtkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gtkmm-3.0/include -I/usr/include/atkmm-1.6 -I/usr/include/gtk-3.0/unix-print -I/usr/include/gdkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gdkmm-3.0/include -I/usr/include/giomm-2.4 -I/usr/lib/arm-linux-gnueabihf/giomm-2.4/include -I/usr/include/pangomm-1.4 -I/usr/lib/arm-linux-gnueabihf/pangomm-1.4/include -I/usr/include/glibmm-2.4 -I/usr/lib/arm-linux-gnueabihf/glibmm-2.4/include -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib/arm-linux-gnueabihf/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/fribidi -I/usr/include/harfbuzz -I/usr/include/atk-1.0 -I/usr/include/cairomm-1.0 -I/usr/lib/arm-linux-gnueabihf/cairomm-1.0/include -I/usr/include/pixman-1 -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/sigc++-2.0 -I/usr/lib/arm-linux-gnueabihf/sigc++-2.0/include -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib/arm-linux-gnueabihf/glib-2.0/include -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_gui.dir/src/rs485_gui_adapter.cpp.o -c /home/ums/ReCUm12/modules/gui/src/rs485_gui_adapter.cpp",
   "file": "/home/ums/ReCUm12/modules/gui/src/rs485_gui_adapter.cpp"
+},
+{
+  "directory": "/home/ums/ReCUm12/build/modules/gui",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/gui/include -I/usr/include/gtkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gtkmm-3.0/include -I/usr/include/atkmm-1.6 -I/usr/include/gtk-3.0/unix-print -I/usr/include/gdkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gdkmm-3.0/include -I/usr/include/giomm-2.4 -I/usr/lib/arm-linux-gnueabihf/giomm-2.4/include -I/usr/include/pangomm-1.4 -I/usr/lib/arm-linux-gnueabihf/pangomm-1.4/include -I/usr/include/glibmm-2.4 -I/usr/lib/arm-linux-gnueabihf/glibmm-2.4/include -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib/arm-linux-gnueabihf/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/fribidi -I/usr/include/harfbuzz -I/usr/include/atk-1.0 -I/usr/include/cairomm-1.0 -I/usr/lib/arm-linux-gnueabihf/cairomm-1.0/include -I/usr/include/pixman-1 -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/sigc++-2.0 -I/usr/lib/arm-linux-gnueabihf/sigc++-2.0/include -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib/arm-linux-gnueabihf/glib-2.0/include -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/rfid/include -g -std=gnu++17 -o CMakeFiles/recum12_gui.dir/src/StatusMessageController.cpp.o -c /home/ums/ReCUm12/modules/gui/src/StatusMessageController.cpp",
+  "file": "/home/ums/ReCUm12/modules/gui/src/StatusMessageController.cpp"
 },
 {
   "directory": "/home/ums/ReCUm12/build/modules/rfid",
@@ -56,7 +71,12 @@
 },
 {
   "directory": "/home/ums/ReCUm12/build/apps/recum12_app",
-  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/gui/include -I/home/ums/ReCUm12/modules/rfid/include -I/home/ums/ReCUm12/modules/net/include -I/home/ums/ReCUm12/modules/utils/include -g -std=gnu++17 -o CMakeFiles/recum12_app.dir/src/main.cpp.o -c /home/ums/ReCUm12/apps/recum12_app/src/main.cpp",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/rfid/include -I/home/ums/ReCUm12/modules/gui/include -I/usr/include/gtkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gtkmm-3.0/include -I/usr/include/atkmm-1.6 -I/usr/include/gtk-3.0/unix-print -I/usr/include/gdkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gdkmm-3.0/include -I/usr/include/giomm-2.4 -I/usr/lib/arm-linux-gnueabihf/giomm-2.4/include -I/usr/include/pangomm-1.4 -I/usr/lib/arm-linux-gnueabihf/pangomm-1.4/include -I/usr/include/glibmm-2.4 -I/usr/lib/arm-linux-gnueabihf/glibmm-2.4/include -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib/arm-linux-gnueabihf/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/fribidi -I/usr/include/harfbuzz -I/usr/include/atk-1.0 -I/usr/include/cairomm-1.0 -I/usr/lib/arm-linux-gnueabihf/cairomm-1.0/include -I/usr/include/pixman-1 -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/sigc++-2.0 -I/usr/lib/arm-linux-gnueabihf/sigc++-2.0/include -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib/arm-linux-gnueabihf/glib-2.0/include -I/home/ums/ReCUm12/modules/net/include -I/home/ums/ReCUm12/modules/utils/include -g -std=gnu++17 -o CMakeFiles/recum12_app.dir/src/main.cpp.o -c /home/ums/ReCUm12/apps/recum12_app/src/main.cpp",
   "file": "/home/ums/ReCUm12/apps/recum12_app/src/main.cpp"
+},
+{
+  "directory": "/home/ums/ReCUm12/build/apps/recum12_app",
+  "command": "/usr/bin/arm-linux-gnueabihf-g++  -I/home/ums/ReCUm12/modules/hw/include -I/home/ums/ReCUm12/modules/core/include -I/home/ums/ReCUm12/modules/rfid/include -I/home/ums/ReCUm12/modules/gui/include -I/usr/include/gtkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gtkmm-3.0/include -I/usr/include/atkmm-1.6 -I/usr/include/gtk-3.0/unix-print -I/usr/include/gdkmm-3.0 -I/usr/lib/arm-linux-gnueabihf/gdkmm-3.0/include -I/usr/include/giomm-2.4 -I/usr/lib/arm-linux-gnueabihf/giomm-2.4/include -I/usr/include/pangomm-1.4 -I/usr/lib/arm-linux-gnueabihf/pangomm-1.4/include -I/usr/include/glibmm-2.4 -I/usr/lib/arm-linux-gnueabihf/glibmm-2.4/include -I/usr/include/gtk-3.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/at-spi-2.0 -I/usr/include/dbus-1.0 -I/usr/lib/arm-linux-gnueabihf/dbus-1.0/include -I/usr/include/gio-unix-2.0 -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/fribidi -I/usr/include/harfbuzz -I/usr/include/atk-1.0 -I/usr/include/cairomm-1.0 -I/usr/lib/arm-linux-gnueabihf/cairomm-1.0/include -I/usr/include/pixman-1 -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/sigc++-2.0 -I/usr/lib/arm-linux-gnueabihf/sigc++-2.0/include -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/glib-2.0 -I/usr/lib/arm-linux-gnueabihf/glib-2.0/include -I/home/ums/ReCUm12/modules/net/include -I/home/ums/ReCUm12/modules/utils/include -g -std=gnu++17 -o CMakeFiles/recum12_app.dir/src/AppRuntime.cpp.o -c /home/ums/ReCUm12/apps/recum12_app/src/AppRuntime.cpp",
+  "file": "/home/ums/ReCUm12/apps/recum12_app/src/AppRuntime.cpp"
 }
 ]

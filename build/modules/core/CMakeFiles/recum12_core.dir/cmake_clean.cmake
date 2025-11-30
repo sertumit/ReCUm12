@@ -1,5 +1,7 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/recum12_core.dir/src/PumpRuntimeState.cpp.o"
   "CMakeFiles/recum12_core.dir/src/PumpSaleTracker.cpp.o"
+  "CMakeFiles/recum12_core.dir/src/RfidAuthController.cpp.o"
   "CMakeFiles/recum12_core.dir/src/UserManager.cpp.o"
   "librecum12_core.a"
   "librecum12_core.pdb"
