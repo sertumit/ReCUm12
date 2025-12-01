@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <ctime>
 #include <cctype>
+#include <filesystem>
 #include <glibmm/main.h>
 #include <ifaddrs.h>
 #include <netinet/in.h>
@@ -240,6 +241,43 @@ AppRuntime::AppRuntime(MainWindow& ui_)
 
     // Tarih / saat label'ları için periyodik clock başlat
     init_clock();
+
+    // LogManager: appRoot tespiti ve scaffold oluşturma
+    {
+        namespace fs = std::filesystem;
+        std::error_code ec;
+        fs::path cwd = fs::current_path(ec);
+        if (!ec) {
+            app_root = cwd.string();
+        } else {
+            app_root = recum12::utils::LogManager::detectAppRoot();
+        }
+    }
+    std::cout << "[LogManager] app_root = " << app_root << std::endl;
+
+    const bool scaffold_ok = recum12::utils::LogManager::ensureScaffold(app_root);
+    std::cout << "[LogManager] ensureScaffold -> "
+              << (scaffold_ok ? "OK" : "FAIL") << std::endl;
+
+    // İlk test log kaydı: uygulama runtime'ı başladı.
+    if (scaffold_ok) {
+        recum12::utils::LogManager::UsageEntry e{};
+        e.processId = 0;          // PC tarafı başlangıç kaydı
+        e.logCode   = "APP_START";
+        // timeStamp boş bırakılırsa appendUsage içinde ISO-8601 UTC doldurulur.
+        e.sendOk    = "NA";
+
+        const bool logged = log_manager.appendUsage(app_root, e);
+        std::cout << "[LogManager] appendUsage(APP_START) -> "
+                  << (logged ? "OK" : "FAIL") << std::endl;
+        if (!logged) {
+            std::cerr << "[LogManager] ERROR: APP_START satırı yazılamadı."
+                      << " (logs/log_user/logs.csv)" << std::endl;
+        }
+    } else {
+        std::cerr << "[LogManager] ERROR: ensureScaffold başarısız,"
+                  << " APP_START log'u atlanıyor." << std::endl;
+    }
     // users.csv yükleme
     const std::string user_paths[] = {
         "configs/users.csv",

@@ -18,6 +18,7 @@
 #include "core/UserManager.h"
 #include "hw/PumpInterfaceLvl3.h"
 #include "rfid/Pn532Reader.h"
+#include "utils/LogManager.h"
 
 namespace recum12::gui {
 
@@ -50,6 +51,10 @@ struct AppRuntime {
 
     ::core::PumpRuntimeStore  pump_store;
 
+    // LogManager entegrasyonu (logs/log_user/logs.csv için)
+    recum12::utils::LogManager log_manager;
+    std::string                app_root;
+    
     recum12::comm::NetworkManager    net_manager;
     
     recum12::utils::Settings  settings;
