@@ -373,10 +373,6 @@ AppRuntime::AppRuntime(MainWindow& ui_)
         //  - PumpOff_PC: satış bitişi + GunOff ile aynı frame'de,
         //    ama log sırası: önce GunOff_PC, sonra PumpOff_PC
 
-        const bool completed_state =
-            (snapshot.pump_state == ::core::PumpState::FillingCompleted) ||
-            (snapshot.pump_state == ::core::PumpState::MaxAmount);
-
         const bool nozzle_edge_on  = (!last_nozzle_out && snapshot.nozzle_out);
         const bool nozzle_edge_off = (last_nozzle_out && !snapshot.nozzle_out);
 
@@ -431,8 +427,10 @@ AppRuntime::AppRuntime(MainWindow& ui_)
             }
 
             // Ardından, gerçekten tamamlanmış bir satış varsa PumpOff_PC logu
-            if (completed_state &&
-                snapshot.has_last_fill &&
+            // Not: Pompanın durumunu (FillingCompleted/MaxAmount) artık
+            // kontrol etmiyoruz; resmi litreyi core store'daki
+            // snapshot.last_fill_volume_l üzerinden alıyoruz.
+            if (snapshot.has_last_fill &&
                 snapshot.last_fill_volume_l > 0.0 &&
                 snapshot.last_card_auth_ok) {
 
@@ -675,41 +673,9 @@ AppRuntime::AppRuntime(MainWindow& ui_)
     };
 
     pump.onNozzle = [this](const recum12::hw::NozzleEvent& ev) {
-        // Önce GunOn/GunOff logla, sonra store'u güncelle:
-        // Böylece satış bitişinde yazılan PumpOff_PC log'u her zaman
-        // daha SONRA gelir.
-        {
-            const bool prev = nozzle_out_logged;
-            const bool curr = ev.nozzle_out;
-
-            if (curr != prev) {
-                recum12::utils::LogManager::UsageEntry e{};
-                e.processId = 0;   // transaction id yok
-                e.fuel      = 0.0; // sadece event
-
-                // Son başarılı AUTH varsa user bilgilerini doldur
-                if (last_auth_ok) {
-                    e.rfid      = last_auth_uid;
-                    e.firstName = last_auth_first;
-                    e.lastName  = last_auth_last;
-                    e.plate     = last_auth_plate;
-                    e.limit     = last_auth_limit;
-                }
-
-                e.logCode = curr ? "GunOn_PC" : "GunOff_PC";
-                e.sendOk  = "NA";
-
-                const bool ok = log_manager.appendUsage(app_root, e);
-                if (!ok) {
-                    std::cerr << "[LogManager] WARNING: "
-                              << (curr ? "GunOn_PC" : "GunOff_PC")
-                              << " usage log yazılamadı\n";
-                }
-
-                nozzle_out_logged = curr;
-            }
-        }
-
+        // Nozzle OUT/IN olayını sadece core store'a yansıt;
+        // GunOn/GunOff logları artık PumpRuntimeState snapshot'ı üzerinden
+        // disp_store handler'ında üretiliyor.
         pump_store.updateFromNozzle(ev);
 
         if (ev.nozzle_out) {
