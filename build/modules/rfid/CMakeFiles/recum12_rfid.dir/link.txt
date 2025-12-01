@@ -1,2 +1,0 @@
-/usr/bin/arm-linux-gnueabihf-ar qc librecum12_rfid.a CMakeFiles/recum12_rfid.dir/src/Pn532Reader.cpp.o
-/usr/bin/arm-linux-gnueabihf-ranlib librecum12_rfid.a
