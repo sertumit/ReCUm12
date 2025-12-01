@@ -7,6 +7,8 @@
 #include <glibmm/dispatcher.h>
 #include <string>
 #include <cstdint>
+#include "utils/Settings.h"
+#include "comm/NetworkManager.h"
 
 #include "gui/MainWindow.h"
 #include "gui/StatusMessageController.h"
@@ -48,6 +50,10 @@ struct AppRuntime {
 
     ::core::PumpRuntimeStore  pump_store;
 
+    recum12::comm::NetworkManager    net_manager;
+    
+    recum12::utils::Settings  settings;
+    
     recum12::core::UserManager        user_manager;
     recum12::rfid::Pn532Reader        rfid_reader;
     recum12::core::RfidAuthController rfid_auth;
@@ -72,9 +78,12 @@ struct AppRuntime {
 
     // Tarih / saat label'ları için periyodik timer
     sigc::connection          clock_conn;
-
+    sigc::connection          net_poll_conn;
     // Nozzle OUT→IN geçişini takip etmek için önceki nozzle durumu
     bool                      last_nozzle_out{false};
+
+    // RS485 health durumu (ikon + mesaj için edge detection)
+    bool                      last_rs485_ok{false};
     explicit AppRuntime(MainWindow& ui_);
     ~AppRuntime();
 
@@ -83,6 +92,7 @@ struct AppRuntime {
     void load_repo_log();
     void save_repo_log();
     void refresh_counters_on_ui();
+    void init_network_poll();    
 };
 
 } // namespace recum12::gui

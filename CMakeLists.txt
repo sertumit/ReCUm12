@@ -16,6 +16,7 @@ add_subdirectory(modules/hw)
 add_subdirectory(modules/core)
 add_subdirectory(modules/gui)
 add_subdirectory(modules/rfid)
+add_subdirectory(modules/comm)
 add_subdirectory(modules/net)
 add_subdirectory(modules/utils)
 

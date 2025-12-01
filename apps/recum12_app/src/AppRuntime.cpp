@@ -9,7 +9,12 @@
 #include <ctime>
 #include <cctype>
 #include <glibmm/main.h>
-
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <cstring>
 namespace {
 
 // CORE PumpRuntimeStore -> GUI thread köprüsü için basit cache
@@ -27,6 +32,78 @@ struct AuthGuiCache {
     std::string  last_msg;
     bool         has_msg{false};
 };
+// Belirli bir network arayüzü (örn: "eth0", "wlan0") için IPv4 adresini bulur.
+// Bulamazsa "0.0.0.0" döner.
+std::string get_ip_for_iface(const std::string& iface_name)
+{
+    struct ifaddrs* ifaddr = nullptr;
+    if (getifaddrs(&ifaddr) == -1) {
+        return "0.0.0.0";
+    }
+
+    std::string result = "0.0.0.0";
+
+    for (struct ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr) {
+            continue;
+        }
+
+        if (ifa->ifa_addr->sa_family != AF_INET) {
+            continue; // sadece IPv4
+        }
+
+        if (!ifa->ifa_name) {
+            continue;
+        }
+
+        if (iface_name != ifa->ifa_name) {
+            continue;
+        }
+
+        char host[INET_ADDRSTRLEN] {};
+        auto* sa = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
+        if (inet_ntop(AF_INET, &(sa->sin_addr), host, sizeof(host))) {
+            result = host;
+            break;
+        }
+    }
+
+    freeifaddrs(ifaddr);
+    return result;
+}
+// RS485 device fiziksel olarak var mı?
+// 1) Önce verilen path'e bak (örn: /dev/ttyUSB0 veya by-id)
+// 2) O yoksa /dev altında herhangi bir ttyUSB* görürsek "var" say.
+bool is_rs485_device_present(const std::string& dev_path)
+{
+    // 1) Konfigüre edilen path
+    if (!dev_path.empty()) {
+        if (::access(dev_path.c_str(), F_OK) == 0) {
+            return true;
+        }
+    }
+
+    // 2) /dev altında genel ttyUSB taraması (sadece fiziksel varlık için)
+    DIR* dir = ::opendir("/dev");
+    if (!dir) {
+        return false;
+    }
+
+    bool found = false;
+    while (auto* ent = ::readdir(dir)) {
+        if (!ent->d_name) {
+            continue;
+        }
+        // Örn: ttyUSB0, ttyUSB1 ...
+        if (std::strncmp(ent->d_name, "ttyUSB", 6) == 0) {
+            found = true;
+            break;
+        }
+    }
+
+    ::closedir(dir);
+    return found;
+}
 
 AuthGuiCache g_auth_gui_cache;
 
@@ -131,7 +208,31 @@ AppRuntime::AppRuntime(MainWindow& ui_)
     , workers(pump, rfid_reader)
 {
     using recum12::gui::StatusMessageController;
+    using recum12::utils::Settings;
+    using recum12::comm::NetworkStatus;
 
+    // Uygulama ayarlarını (remote + rs485) yükle
+    settings = Settings::loadDefault();
+
+    // Başlangıçta network durumunu ve IP'leri bir kez oku
+    NetworkStatus net = net_manager.queryStatus();
+
+    const std::string eth_ip_str  = get_ip_for_iface("eth0");
+    const std::string wifi_ip_str = get_ip_for_iface("wlan0");
+
+    Glib::ustring eth_ip  = eth_ip_str.empty()  ? "0.0.0.0" : eth_ip_str;
+    Glib::ustring wifi_ip = wifi_ip_str.empty() ? "0.0.0.0" : wifi_ip_str;
+
+    // Debug için network durumunu logla
+    std::cout << "[NET] status"
+              << " eth="  << (net.ethernet_connected ? "UP" : "DOWN")
+              << " wifi=" << (net.wifi_connected     ? "UP" : "DOWN")
+              << " gsm="  << (net.gsm_connected      ? "UP" : "DOWN")
+              << " gps="  << (net.gps_connected      ? "UP" : "DOWN")
+              << std::endl;
+
+    // İleride: bu bilgiler MainWindow ikonları ve IP label'larına yansıtılacak
+    // (NetworkManager_Integration_Guide planına göre).
     // Başlangıç mesajı ve IDLE görünümü
     status_ctrl.set_message(StatusMessageController::Channel::Pump,
                             "İşlem Yapılabilir");
@@ -347,7 +448,20 @@ AppRuntime::AppRuntime(MainWindow& ui_)
     };
 
     // RS485 Pump arayüzü kurulumu
-    pump.setDevice("/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A5069RR4-if00-port0");
+    // Varsayılan path: eski by-id port (geri düşme için)
+    std::string rs485_port =
+        "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A5069RR4-if00-port0";
+
+    // settings.rs485() içinden name == "pump" olan kaydı bul ve port'u kullan
+    const auto& rs485_list = settings.rs485();
+    for (const auto& cfg : rs485_list) {
+        if (cfg.name == "pump" && !cfg.port.empty()) {
+            rs485_port = cfg.port;
+            break;
+        }
+    }
+
+    pump.setDevice(rs485_port);
 
     if (!pump.open()) {
         std::cerr << "Uyarı: RS485 portu açılamadı ("
@@ -360,6 +474,24 @@ AppRuntime::AppRuntime(MainWindow& ui_)
                   << pump.device()
                   << std::endl;
     }
+    // Başlangıç network + RS485 durumunu GUI'deki ikonlara ve IP label'larına yansıt
+    const bool rs485_ok =
+        pump.isOpen() && is_rs485_device_present(pump.device());
+
+    ui.apply_network_status(
+        net.ethernet_connected,
+        net.wifi_connected,
+        false,            // gsm_connected (şimdilik her zaman OFF)
+        rs485_ok,
+        eth_ip,
+        wifi_ip,
+        "0.0.0.0"         // GPRS IP: şimdilik her zaman 0.0.0.0
+    );
+
+    // RS485 başlangıç durumunu cache'le (hotplug mesajları için)
+    last_rs485_ok = rs485_ok;
+    // Network + RS485 durumunu 2 sn'de bir yenile
+    init_network_poll();
 
     rfid_auth.setPumpInterface(&pump);
     rfid_auth.attach();
@@ -405,6 +537,11 @@ AppRuntime::AppRuntime(MainWindow& ui_)
 
 AppRuntime::~AppRuntime()
 {
+    // Network polling timer'ını kapat
+    if (net_poll_conn.connected()) {
+        net_poll_conn.disconnect();
+    }
+
     // Worker thread'lerini kapat ve RFID reader'ı kapat
     workers.stop();
     rfid_reader.close();
@@ -439,6 +576,56 @@ void AppRuntime::init_clock()
     clock_conn = Glib::signal_timeout().connect_seconds(
         sigc::slot<bool>(tick),
         60);
+}
+void AppRuntime::init_network_poll()
+{
+    using recum12::comm::NetworkStatus;
+
+    // 2 saniyede bir network + RS485 durumunu yenile
+    net_poll_conn = Glib::signal_timeout().connect_seconds(
+        sigc::slot<bool>([this]() {
+            using recum12::gui::StatusMessageController;
+
+            // Network durumu
+            NetworkStatus net = net_manager.queryStatus();
+
+            const std::string eth_ip_str  = get_ip_for_iface("eth0");
+            const std::string wifi_ip_str = get_ip_for_iface("wlan0");
+
+            Glib::ustring eth_ip  = eth_ip_str.empty()  ? "0.0.0.0" : eth_ip_str;
+            Glib::ustring wifi_ip = wifi_ip_str.empty() ? "0.0.0.0" : wifi_ip_str;
+
+            // RS485 durumu (adaptör çıkarılıp takıldığında device node da kaybolur)
+            const bool rs485_ok =
+                pump.isOpen() && is_rs485_device_present(pump.device());
+
+            // İkon + IP label'larını güncelle
+            ui.apply_network_status(
+                net.ethernet_connected,
+                net.wifi_connected,
+                false,            // gsm_connected (şimdilik her zaman OFF)
+                rs485_ok,
+                eth_ip,
+                wifi_ip,
+                "0.0.0.0"         // GPRS IP: şimdilik hep 0.0.0.0
+            );
+
+            // RS485 hata / toparlama edge'leri:
+            //  - true -> false : "Pompa Haberleşme Hatası"
+            //  - false -> true : System kanalını temizle (önceki mesaj yapısına dön)
+            if (!rs485_ok && last_rs485_ok) {
+                status_ctrl.set_message(
+                    StatusMessageController::Channel::System,
+                    "Pompa Haberleşme Hatası");
+            } else if (rs485_ok && !last_rs485_ok) {
+                status_ctrl.clear_channel(StatusMessageController::Channel::System);
+            }
+
+            last_rs485_ok = rs485_ok;
+
+            return true; // timer devam etsin
+        }),
+        2);
 }
 
 void AppRuntime::refresh_counters_on_ui()

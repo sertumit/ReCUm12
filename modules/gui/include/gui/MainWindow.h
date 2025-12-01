@@ -25,6 +25,17 @@ public:
     void set_level_value(double liters);
     void set_last_fuel_value(double liters);
 
+    // Network durum ikonları ve IP label'ları:
+    //  - imgwifi / imglan / imggsm / imgrs485
+    //  - lblEthIP / lblWiFiIP / lblGprsIP
+    void apply_network_status(bool eth_connected,
+                              bool wifi_connected,
+                              bool gsm_connected,
+                              bool rs485_ok,
+                              const Glib::ustring& eth_ip,
+                              const Glib::ustring& wifi_ip,
+                              const Glib::ustring& gprs_ip);
+
     // Tarih / saat label'ları
     void set_date_text(const Glib::ustring& text);
     void set_time_text(const Glib::ustring& text);
@@ -65,6 +76,18 @@ private:
     Gtk::Label* lblcounter_ {nullptr};
     Gtk::Label* lblwaitrecs_ {nullptr};
     // Rev02 runtime state machine referansındaki ek widget'lar
+
+    // Network ikonları
+    Gtk::Image* imgwifi_  {nullptr};
+    Gtk::Image* imglan_   {nullptr};
+    Gtk::Image* imggsm_   {nullptr};
+    Gtk::Image* imgrs485_ {nullptr};
+
+    // Network IP label'ları
+    Gtk::Label* lblEthIP_   {nullptr};
+    Gtk::Label* lblWiFiIP_  {nullptr};
+    Gtk::Label* lblGprsIP_  {nullptr};
+
     Gtk::Image* imgvhec_ {nullptr};
     Gtk::Image* imgpump_ {nullptr};
     Gtk::Image* imggun_ {nullptr};

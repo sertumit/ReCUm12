@@ -1,0 +1,26 @@
+{
+    "remote": {
+      "ports": {
+        "reconnect_ms": 3000,
+        "client": 5051,
+        "server_host": "192.168.2.2",
+        "server_port": 5051
+      },
+      "prefer_iface": [
+        "eth0",
+        "wlan0",
+        "ppp0"
+      ]
+    },
+    "rs485": [
+      {
+        "baud": 9600,
+        "data_bits": 8,
+        "name": "pump",
+        "parity": "O",
+        "port": "/dev/ttyUSB0",
+        "stop_bits": 1
+      }
+    ]
+  }
+  

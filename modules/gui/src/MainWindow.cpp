@@ -68,23 +68,41 @@ void MainWindow::bind_widgets()
     builder_->get_widget("lblvechs",    lblvechs_);
     builder_->get_widget("lblcounter",  lblcounter_);
     builder_->get_widget("lblwaitrecs", lblwaitrecs_);
+
+    // Network ikonları ve IP label'ları
+    builder_->get_widget("imgwifi",  imgwifi_);
+    builder_->get_widget("imglan",   imglan_);
+    builder_->get_widget("imggsm",   imggsm_);
+    builder_->get_widget("imgrs485", imgrs485_);
+
+    builder_->get_widget("lblEthIP",   lblEthIP_);
+    builder_->get_widget("lblWiFiIP",  lblWiFiIP_);
+    builder_->get_widget("lblGprsIP",  lblGprsIP_);
+
     builder_->get_widget("imgvhec", imgvhec_);
     builder_->get_widget("imgpump", imgpump_);
     builder_->get_widget("imggun", imggun_);
     builder_->get_widget("lbllevel", lbllevel_);
     builder_->get_widget("lastfuel", lbllastfuel_);
-    builder_->get_widget("btnauth", btnauth_);
+    //builder_->get_widget("btnauth", btnauth_);
 
     // İkonlar için sabit boyut; böylece ON/OFF/SUSPEND ikonları değişse de
     // pencere yatayda zıplamaz.
     if (imgvhec_) imgvhec_->set_size_request(48, 48);  // truck icon
     if (imgpump_) imgpump_->set_size_request(64, 64);  // station icon
     if (imggun_)  imggun_->set_size_request(64, 64);   // gun icon
-    // Auth butonu (şimdilik kart okuma simülasyonu gibi kullanıyoruz)
+
+    // Network ikon boyutları (48x48)
+    if (imgwifi_)  imgwifi_->set_size_request(48, 48);
+    if (imglan_)   imglan_->set_size_request(48, 48);
+    if (imggsm_)   imggsm_->set_size_request(48, 48);
+    if (imgrs485_) imgrs485_->set_size_request(48, 48);
+
+    /*// Auth butonu (şimdilik kart okuma simülasyonu gibi kullanıyoruz)
     if (btnauth_) {
         btnauth_->signal_clicked().connect(
             sigc::mem_fun(*this, &MainWindow::on_auth_clicked));
-    }
+    }*/
 }
 
 bool MainWindow::apply_css_from_file(const std::string& css_path)
@@ -262,6 +280,61 @@ void MainWindow::apply_error_view(const Glib::ustring& message)
     set_image_safe(imgpump_, "modules/gui/resources/station_err_64x64.png");
 
     set_status_message(message);
+}
+
+// Network durum ikonları ve IP label'ları:
+//  - imgwifi : bağlantı var → wifi_on_48x48, yok → wifi_off_48x48
+//  - imglan  : bağlantı var → lan_on_48x48,  yok → lan_off_48x48
+//  - imggsm  : şimdilik her zaman gsm_off_48x48
+//  - imgrs485: RS485 sağlıklı → Rs485_on_48x48, yok → Rs485_off_48x48
+//  - lblEthIP : bağlantı yoksa "0.0.0.0"
+//  - lblWiFiIP: bağlantı yoksa "0.0.0.0"
+//  - lblGprsIP: şimdilik her zaman "0.0.0.0"
+void MainWindow::apply_network_status(bool eth_connected,
+                                      bool wifi_connected,
+                                      bool gsm_connected,
+                                      bool rs485_ok,
+                                      const Glib::ustring& eth_ip,
+                                      const Glib::ustring& wifi_ip,
+                                      const Glib::ustring& gprs_ip)
+{
+    // WiFi ikon
+    set_image_safe(
+        imgwifi_,
+        wifi_connected
+            ? "modules/gui/resources/wifi_on_48x48.png"
+            : "modules/gui/resources/wifi_off_48x48.png");
+
+    // LAN ikon
+    set_image_safe(
+        imglan_,
+        eth_connected
+            ? "modules/gui/resources/lan_on_48x48.png"
+            : "modules/gui/resources/lan_off_48x48.png");
+
+    // GSM ikon: şimdilik her zaman OFF (parametre ileride kullanılabilir)
+    (void)gsm_connected;
+    set_image_safe(imggsm_, "modules/gui/resources/gsm_off_48x48.png");
+
+    // RS485 ikon
+    set_image_safe(
+        imgrs485_,
+        rs485_ok
+            ? "modules/gui/resources/Rs485_on_48x48.png"
+            : "modules/gui/resources/Rs485_off_48x48.png");
+
+    // IP label'ları
+    if (lblEthIP_) {
+        lblEthIP_->set_text(eth_connected ? eth_ip : "0.0.0.0");
+    }
+    if (lblWiFiIP_) {
+        lblWiFiIP_->set_text(wifi_connected ? wifi_ip : "0.0.0.0");
+    }
+    if (lblGprsIP_) {
+        // Şimdilik her zaman 0.0.0.0; parametre ileride gerçek GPRS IP için kullanılabilir.
+        (void)gprs_ip;
+        lblGprsIP_->set_text("0.0.0.0");
+    }
 }
 void MainWindow::set_level_value(double liters)
 {
