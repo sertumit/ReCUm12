@@ -1,7 +1,7 @@
 # Build çıktıları
 build/
 cmake-build-*/
-CMakeFiles/
+#CMakeFiles/
 CMakeCache.txt
 Makefile
 *.o
