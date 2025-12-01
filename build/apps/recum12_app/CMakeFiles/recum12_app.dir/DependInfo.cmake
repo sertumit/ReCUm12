@@ -51,6 +51,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/include/blkid"
   "/usr/include/glib-2.0"
   "/usr/lib/arm-linux-gnueabihf/glib-2.0/include"
+  "../modules/comm/include"
   "../modules/net/include"
   "../modules/utils/include"
   )
@@ -61,6 +62,7 @@ set(CMAKE_TARGET_LINKED_INFO_FILES
   "/home/ums/ReCUm12/build/modules/core/CMakeFiles/recum12_core.dir/DependInfo.cmake"
   "/home/ums/ReCUm12/build/modules/gui/CMakeFiles/recum12_gui.dir/DependInfo.cmake"
   "/home/ums/ReCUm12/build/modules/rfid/CMakeFiles/recum12_rfid.dir/DependInfo.cmake"
+  "/home/ums/ReCUm12/build/modules/comm/CMakeFiles/recum12_comm.dir/DependInfo.cmake"
   "/home/ums/ReCUm12/build/modules/net/CMakeFiles/recum12_net.dir/DependInfo.cmake"
   "/home/ums/ReCUm12/build/modules/utils/CMakeFiles/recum12_utils.dir/DependInfo.cmake"
   )

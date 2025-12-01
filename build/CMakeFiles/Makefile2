@@ -76,6 +76,7 @@ all: modules/hw/all
 all: modules/core/all
 all: modules/gui/all
 all: modules/rfid/all
+all: modules/comm/all
 all: modules/net/all
 all: modules/utils/all
 all: apps/recum12_app/all
@@ -87,6 +88,7 @@ preinstall: modules/hw/preinstall
 preinstall: modules/core/preinstall
 preinstall: modules/gui/preinstall
 preinstall: modules/rfid/preinstall
+preinstall: modules/comm/preinstall
 preinstall: modules/net/preinstall
 preinstall: modules/utils/preinstall
 preinstall: apps/recum12_app/preinstall
@@ -98,6 +100,7 @@ clean: modules/hw/clean
 clean: modules/core/clean
 clean: modules/gui/clean
 clean: modules/rfid/clean
+clean: modules/comm/clean
 clean: modules/net/clean
 clean: modules/utils/clean
 clean: apps/recum12_app/clean
@@ -121,6 +124,24 @@ apps/recum12_app/preinstall:
 apps/recum12_app/clean: apps/recum12_app/CMakeFiles/recum12_app.dir/clean
 
 .PHONY : apps/recum12_app/clean
+
+#=============================================================================
+# Directory level rules for directory modules/comm
+
+# Recursive "all" directory target.
+modules/comm/all: modules/comm/CMakeFiles/recum12_comm.dir/all
+
+.PHONY : modules/comm/all
+
+# Recursive "preinstall" directory target.
+modules/comm/preinstall:
+
+.PHONY : modules/comm/preinstall
+
+# Recursive "clean" directory target.
+modules/comm/clean: modules/comm/CMakeFiles/recum12_comm.dir/clean
+
+.PHONY : modules/comm/clean
 
 #=============================================================================
 # Directory level rules for directory modules/core
@@ -237,7 +258,7 @@ modules/utils/clean: modules/utils/CMakeFiles/recum12_utils.dir/clean
 modules/hw/CMakeFiles/recum12_hw.dir/all:
 	$(MAKE) $(MAKESILENT) -f modules/hw/CMakeFiles/recum12_hw.dir/build.make modules/hw/CMakeFiles/recum12_hw.dir/depend
 	$(MAKE) $(MAKESILENT) -f modules/hw/CMakeFiles/recum12_hw.dir/build.make modules/hw/CMakeFiles/recum12_hw.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=13,14,15 "Built target recum12_hw"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=15,16,17 "Built target recum12_hw"
 .PHONY : modules/hw/CMakeFiles/recum12_hw.dir/all
 
 # Build rule for subdir invocation for target.
@@ -265,7 +286,7 @@ modules/core/CMakeFiles/recum12_core.dir/all: modules/hw/CMakeFiles/recum12_hw.d
 modules/core/CMakeFiles/recum12_core.dir/all: modules/rfid/CMakeFiles/recum12_rfid.dir/all
 	$(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f modules/core/CMakeFiles/recum12_core.dir/build.make modules/core/CMakeFiles/recum12_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=4,5,6,7,8 "Built target recum12_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=6,7,8,9,10 "Built target recum12_core"
 .PHONY : modules/core/CMakeFiles/recum12_core.dir/all
 
 # Build rule for subdir invocation for target.
@@ -294,7 +315,7 @@ modules/gui/CMakeFiles/recum12_gui.dir/all: modules/core/CMakeFiles/recum12_core
 modules/gui/CMakeFiles/recum12_gui.dir/all: modules/rfid/CMakeFiles/recum12_rfid.dir/all
 	$(MAKE) $(MAKESILENT) -f modules/gui/CMakeFiles/recum12_gui.dir/build.make modules/gui/CMakeFiles/recum12_gui.dir/depend
 	$(MAKE) $(MAKESILENT) -f modules/gui/CMakeFiles/recum12_gui.dir/build.make modules/gui/CMakeFiles/recum12_gui.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=9,10,11,12 "Built target recum12_gui"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=11,12,13,14 "Built target recum12_gui"
 .PHONY : modules/gui/CMakeFiles/recum12_gui.dir/all
 
 # Build rule for subdir invocation for target.
@@ -321,7 +342,7 @@ modules/gui/CMakeFiles/recum12_gui.dir/clean:
 modules/rfid/CMakeFiles/recum12_rfid.dir/all:
 	$(MAKE) $(MAKESILENT) -f modules/rfid/CMakeFiles/recum12_rfid.dir/build.make modules/rfid/CMakeFiles/recum12_rfid.dir/depend
 	$(MAKE) $(MAKESILENT) -f modules/rfid/CMakeFiles/recum12_rfid.dir/build.make modules/rfid/CMakeFiles/recum12_rfid.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=19,20 "Built target recum12_rfid"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=21,22 "Built target recum12_rfid"
 .PHONY : modules/rfid/CMakeFiles/recum12_rfid.dir/all
 
 # Build rule for subdir invocation for target.
@@ -342,13 +363,40 @@ modules/rfid/CMakeFiles/recum12_rfid.dir/clean:
 .PHONY : modules/rfid/CMakeFiles/recum12_rfid.dir/clean
 
 #=============================================================================
+# Target rules for target modules/comm/CMakeFiles/recum12_comm.dir
+
+# All Build rule for target.
+modules/comm/CMakeFiles/recum12_comm.dir/all:
+	$(MAKE) $(MAKESILENT) -f modules/comm/CMakeFiles/recum12_comm.dir/build.make modules/comm/CMakeFiles/recum12_comm.dir/depend
+	$(MAKE) $(MAKESILENT) -f modules/comm/CMakeFiles/recum12_comm.dir/build.make modules/comm/CMakeFiles/recum12_comm.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=4,5 "Built target recum12_comm"
+.PHONY : modules/comm/CMakeFiles/recum12_comm.dir/all
+
+# Build rule for subdir invocation for target.
+modules/comm/CMakeFiles/recum12_comm.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ums/ReCUm12/build/CMakeFiles 2
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 modules/comm/CMakeFiles/recum12_comm.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ums/ReCUm12/build/CMakeFiles 0
+.PHONY : modules/comm/CMakeFiles/recum12_comm.dir/rule
+
+# Convenience name for target.
+recum12_comm: modules/comm/CMakeFiles/recum12_comm.dir/rule
+
+.PHONY : recum12_comm
+
+# clean rule for target.
+modules/comm/CMakeFiles/recum12_comm.dir/clean:
+	$(MAKE) $(MAKESILENT) -f modules/comm/CMakeFiles/recum12_comm.dir/build.make modules/comm/CMakeFiles/recum12_comm.dir/clean
+.PHONY : modules/comm/CMakeFiles/recum12_comm.dir/clean
+
+#=============================================================================
 # Target rules for target modules/net/CMakeFiles/recum12_net.dir
 
 # All Build rule for target.
 modules/net/CMakeFiles/recum12_net.dir/all:
 	$(MAKE) $(MAKESILENT) -f modules/net/CMakeFiles/recum12_net.dir/build.make modules/net/CMakeFiles/recum12_net.dir/depend
 	$(MAKE) $(MAKESILENT) -f modules/net/CMakeFiles/recum12_net.dir/build.make modules/net/CMakeFiles/recum12_net.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=16,17,18 "Built target recum12_net"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=18,19,20 "Built target recum12_net"
 .PHONY : modules/net/CMakeFiles/recum12_net.dir/all
 
 # Build rule for subdir invocation for target.
@@ -375,7 +423,7 @@ modules/net/CMakeFiles/recum12_net.dir/clean:
 modules/utils/CMakeFiles/recum12_utils.dir/all:
 	$(MAKE) $(MAKESILENT) -f modules/utils/CMakeFiles/recum12_utils.dir/build.make modules/utils/CMakeFiles/recum12_utils.dir/depend
 	$(MAKE) $(MAKESILENT) -f modules/utils/CMakeFiles/recum12_utils.dir/build.make modules/utils/CMakeFiles/recum12_utils.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=21,22,23 "Built target recum12_utils"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/ums/ReCUm12/build/CMakeFiles --progress-num=23,24,25 "Built target recum12_utils"
 .PHONY : modules/utils/CMakeFiles/recum12_utils.dir/all
 
 # Build rule for subdir invocation for target.
@@ -403,6 +451,7 @@ apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/hw/CMakeFiles/recum12_h
 apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/core/CMakeFiles/recum12_core.dir/all
 apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/gui/CMakeFiles/recum12_gui.dir/all
 apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/rfid/CMakeFiles/recum12_rfid.dir/all
+apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/comm/CMakeFiles/recum12_comm.dir/all
 apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/net/CMakeFiles/recum12_net.dir/all
 apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/utils/CMakeFiles/recum12_utils.dir/all
 	$(MAKE) $(MAKESILENT) -f apps/recum12_app/CMakeFiles/recum12_app.dir/build.make apps/recum12_app/CMakeFiles/recum12_app.dir/depend
@@ -412,7 +461,7 @@ apps/recum12_app/CMakeFiles/recum12_app.dir/all: modules/utils/CMakeFiles/recum1
 
 # Build rule for subdir invocation for target.
 apps/recum12_app/CMakeFiles/recum12_app.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ums/ReCUm12/build/CMakeFiles 23
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ums/ReCUm12/build/CMakeFiles 25
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 apps/recum12_app/CMakeFiles/recum12_app.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/ums/ReCUm12/build/CMakeFiles 0
 .PHONY : apps/recum12_app/CMakeFiles/recum12_app.dir/rule

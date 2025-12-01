@@ -48,6 +48,24 @@ string
 vector
 -
 
+/home/ums/ReCUm12/modules/gui/src/MainWindow.cpp
+gui/MainWindow.h
+/home/ums/ReCUm12/modules/gui/src/gui/MainWindow.h
+iostream
+-
+vector
+-
+sstream
+-
+gdkmm/pixbuf.h
+-
+
+/home/ums/ReCUm12/modules/gui/src/StatusMessageController.cpp
+gui/StatusMessageController.h
+/home/ums/ReCUm12/modules/gui/src/gui/StatusMessageController.h
+gui/MainWindow.h
+/home/ums/ReCUm12/modules/gui/src/gui/MainWindow.h
+
 /home/ums/ReCUm12/modules/gui/src/rs485_gui_adapter.cpp
 gui/rs485_gui_adapter.h
 /home/ums/ReCUm12/modules/gui/src/gui/rs485_gui_adapter.h

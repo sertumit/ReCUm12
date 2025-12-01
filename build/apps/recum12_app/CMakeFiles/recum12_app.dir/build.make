@@ -117,6 +117,7 @@ apps/recum12_app/recum12_app: modules/hw/librecum12_hw.a
 apps/recum12_app/recum12_app: modules/core/librecum12_core.a
 apps/recum12_app/recum12_app: modules/gui/librecum12_gui.a
 apps/recum12_app/recum12_app: modules/rfid/librecum12_rfid.a
+apps/recum12_app/recum12_app: modules/comm/librecum12_comm.a
 apps/recum12_app/recum12_app: modules/net/librecum12_net.a
 apps/recum12_app/recum12_app: modules/utils/librecum12_utils.a
 apps/recum12_app/recum12_app: modules/core/librecum12_core.a

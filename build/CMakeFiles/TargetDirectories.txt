@@ -12,6 +12,9 @@
 /home/ums/ReCUm12/build/modules/rfid/CMakeFiles/rebuild_cache.dir
 /home/ums/ReCUm12/build/modules/rfid/CMakeFiles/edit_cache.dir
 /home/ums/ReCUm12/build/modules/rfid/CMakeFiles/recum12_rfid.dir
+/home/ums/ReCUm12/build/modules/comm/CMakeFiles/rebuild_cache.dir
+/home/ums/ReCUm12/build/modules/comm/CMakeFiles/edit_cache.dir
+/home/ums/ReCUm12/build/modules/comm/CMakeFiles/recum12_comm.dir
 /home/ums/ReCUm12/build/modules/net/CMakeFiles/rebuild_cache.dir
 /home/ums/ReCUm12/build/modules/net/CMakeFiles/edit_cache.dir
 /home/ums/ReCUm12/build/modules/net/CMakeFiles/recum12_net.dir

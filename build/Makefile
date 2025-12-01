@@ -182,6 +182,19 @@ recum12_rfid/fast:
 .PHONY : recum12_rfid/fast
 
 #=============================================================================
+# Target rules for targets named recum12_comm
+
+# Build rule for target.
+recum12_comm: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 recum12_comm
+.PHONY : recum12_comm
+
+# fast build rule for target.
+recum12_comm/fast:
+	$(MAKE) $(MAKESILENT) -f modules/comm/CMakeFiles/recum12_comm.dir/build.make modules/comm/CMakeFiles/recum12_comm.dir/build
+.PHONY : recum12_comm/fast
+
+#=============================================================================
 # Target rules for targets named recum12_net
 
 # Build rule for target.
@@ -229,6 +242,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... recum12_app"
+	@echo "... recum12_comm"
 	@echo "... recum12_core"
 	@echo "... recum12_gui"
 	@echo "... recum12_hw"

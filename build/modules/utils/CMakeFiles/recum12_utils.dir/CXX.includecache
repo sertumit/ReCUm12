@@ -9,6 +9,12 @@
 ../modules/utils/include/utils/LogManager.h
 
 ../modules/utils/include/utils/Settings.h
+cstdint
+-
+string
+-
+vector
+-
 
 /home/ums/ReCUm12/modules/utils/src/LogManager.cpp
 utils/LogManager.h
@@ -17,4 +23,8 @@ utils/LogManager.h
 /home/ums/ReCUm12/modules/utils/src/Settings.cpp
 utils/Settings.h
 /home/ums/ReCUm12/modules/utils/src/utils/Settings.h
+fstream
+-
+nlohmann/json.hpp
+-
 

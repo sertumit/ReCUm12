@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+../modules/comm/include/comm/NetworkManager.h
+string
+-
+
 ../modules/core/include/core/PumpRuntimeState.h
 functional
 -
@@ -90,6 +94,14 @@ functional
 string
 -
 
+../modules/utils/include/utils/Settings.h
+cstdint
+-
+string
+-
+vector
+-
+
 ../modules/utils/include/utils/Version.h
 string_view
 -
@@ -115,6 +127,18 @@ cctype
 -
 glibmm/main.h
 -
+ifaddrs.h
+-
+netinet/in.h
+-
+arpa/inet.h
+-
+unistd.h
+-
+dirent.h
+-
+cstring
+-
 
 /home/ums/ReCUm12/apps/recum12_app/src/AppRuntime.h
 atomic
@@ -129,6 +153,10 @@ string
 -
 cstdint
 -
+utils/Settings.h
+/home/ums/ReCUm12/apps/recum12_app/src/utils/Settings.h
+comm/NetworkManager.h
+/home/ums/ReCUm12/apps/recum12_app/src/comm/NetworkManager.h
 gui/MainWindow.h
 /home/ums/ReCUm12/apps/recum12_app/src/gui/MainWindow.h
 gui/StatusMessageController.h
