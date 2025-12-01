@@ -390,6 +390,34 @@ AppRuntime::AppRuntime(MainWindow& ui_)
             vhec_count += 1;
             repo_fill  += sale_liters;
 
+            // PC tarafı usage log: satış bitişi (PumpOff_PC)
+            {
+                recum12::utils::LogManager::UsageEntry e{};
+                // Şimdilik transaction id bilmiyoruz → 0 sabit
+                e.processId = 0;
+
+                // Son başarılı AUTH bilgisi varsa kullanıcı alanlarını doldur
+                if (last_auth_ok) {
+                    e.rfid      = last_auth_uid;
+                    e.firstName = last_auth_first;
+                    e.lastName  = last_auth_last;
+                    e.plate     = last_auth_plate;
+                    e.limit     = last_auth_limit;
+                }
+
+                // Dolum miktarı (litre)
+                e.fuel    = sale_liters;
+                e.logCode = "PumpOff_PC";
+                // timeStamp boş → appendUsage içinde ISO-8601 UTC doldurulacak
+                e.sendOk  = "NA";
+
+                const bool ok = log_manager.appendUsage(app_root, e);
+                if (!ok) {
+                    std::cerr << "[LogManager] WARNING: PumpOff_PC usage log yazılamadı"
+                              << " (fuel_l=" << sale_liters << ")\n";
+                }
+            }
+
             save_repo_log();
            refresh_counters_on_ui();
         }
@@ -461,6 +489,53 @@ AppRuntime::AppRuntime(MainWindow& ui_)
         // RFID tarafındaki limit bilgisini core store'a taşı
         ctx.limit_liters = a.limit_liters;
         pump_store.updateFromRfidAuth(ctx);
+
+        // AUTH cache'i güncelle (sadece başarılı AUTH için user bilgisi tut)
+        last_auth_ok    = false;
+        last_auth_uid.clear();
+        last_auth_first.clear();
+        last_auth_last.clear();
+        last_auth_plate.clear();
+        last_auth_limit = 0;
+
+        // PC tarafı usage log: AUTH sonucu (AuthOK_PC / NoAuth_PC)
+        recum12::utils::LogManager::UsageEntry e{};
+
+        // Şimdilik transaction id bilgisi yok → 0 sabit
+        e.processId = 0;
+
+        // Kart UID (hex)
+        e.rfid = a.uid_hex;
+
+        // users.csv ile eşleşen kayıt varsa isim/plaka/limit'i doldur
+        if (auto urec = user_manager.findByRfid(a.uid_hex)) {
+            e.firstName = urec->firstName;
+            e.lastName  = urec->lastName;
+            e.plate     = urec->plate;
+            e.limit     = urec->limit; // litre cinsinden int limit (users.csv ile uyumlu)
+
+            if (a.authorized) {
+                last_auth_ok    = true;
+                last_auth_uid   = a.uid_hex;
+                last_auth_first = urec->firstName;
+                last_auth_last  = urec->lastName;
+                last_auth_plate = urec->plate;
+                last_auth_limit = urec->limit;
+            }
+        }
+
+        // AUTH anında henüz dolum yok
+        e.fuel    = 0.0;
+        e.logCode = a.authorized ? "AuthOK_PC" : "NoAuth_PC";
+        // timeStamp boş → appendUsage içinde ISO-8601 UTC doldurulacak
+        e.sendOk  = "NA";
+
+        const bool ok = log_manager.appendUsage(app_root, e);
+        if (!ok) {
+            std::cerr << "[LogManager] WARNING: AUTH usage log yazılamadı ("
+                      << (a.authorized ? "AuthOK_PC" : "NoAuth_PC")
+                      << ", uid=" << a.uid_hex << ")\n";
+        }
     };
 
     rfid_auth.onAuthMessage = [this](const std::string& msg) {
@@ -555,6 +630,39 @@ AppRuntime::AppRuntime(MainWindow& ui_)
 
     pump.onNozzle = [this](const recum12::hw::NozzleEvent& ev) {
         pump_store.updateFromNozzle(ev);
+
+        // PC tarafı usage log: GunOn_PC / GunOff_PC (sadece OUT/IN transition)
+        {
+            const bool prev = nozzle_out_logged;
+            const bool curr = ev.nozzle_out;
+
+            if (curr != prev) {
+                recum12::utils::LogManager::UsageEntry e{};
+                e.processId = 0;   // transaction id yok
+                e.fuel      = 0.0; // sadece event
+
+                // Son başarılı AUTH varsa user bilgilerini doldur
+                if (last_auth_ok) {
+                    e.rfid      = last_auth_uid;
+                    e.firstName = last_auth_first;
+                    e.lastName  = last_auth_last;
+                    e.plate     = last_auth_plate;
+                    e.limit     = last_auth_limit;
+                }
+
+                e.logCode = curr ? "GunOn_PC" : "GunOff_PC";
+                e.sendOk  = "NA";
+
+                const bool ok = log_manager.appendUsage(app_root, e);
+                if (!ok) {
+                    std::cerr << "[LogManager] WARNING: "
+                              << (curr ? "GunOn_PC" : "GunOff_PC")
+                              << " usage log yazılamadı\n";
+                }
+
+                nozzle_out_logged = curr;
+            }
+        }
 
         if (ev.nozzle_out) {
             rfid_auth.handleNozzleOut();

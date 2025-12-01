@@ -54,6 +54,14 @@ struct AppRuntime {
     // LogManager entegrasyonu (logs/log_user/logs.csv için)
     recum12::utils::LogManager log_manager;
     std::string                app_root;
+
+    // Son başarılı AUTH için basit cache (usage log enrich)
+    bool                       last_auth_ok{false};
+    std::string                last_auth_uid;
+    std::string                last_auth_first;
+    std::string                last_auth_last;
+    std::string                last_auth_plate;
+    int                        last_auth_limit{0};
     
     recum12::comm::NetworkManager    net_manager;
     
@@ -86,6 +94,9 @@ struct AppRuntime {
     sigc::connection          net_poll_conn;
     // Nozzle OUT→IN geçişini takip etmek için önceki nozzle durumu
     bool                      last_nozzle_out{false};
+
+    // RS485 nozzle event log (GunOn/GunOff) için önceki durum
+    bool                      nozzle_out_logged{false};
 
     // RS485 health durumu (ikon + mesaj için edge detection)
     bool                      last_rs485_ok{false};
