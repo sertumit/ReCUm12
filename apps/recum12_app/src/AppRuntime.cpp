@@ -367,48 +367,94 @@ AppRuntime::AppRuntime(MainWindow& ui_)
                 }
             }
         }
-        // ---- Satış bitişini yakala:
-        //  - Önceki frame'de nozzle_out == true
-        //  - Şimdiki frame'de  nozzle_out == false  (tabanca pompaya girdi)
-        //  - Pompa state'i FILLING COMPLETED / MAX AMOUNT
-        //  - last_fill dolu ve > 0.0
-        //  - Kart yetkili (last_card_auth_ok)
+        // ---- Tabanca edge'leri ve satış bitişini yakala:
+        //  - GunOn_PC : nozzle_out 0 → 1
+        //  - GunOff_PC: nozzle_out 1 → 0
+        //  - PumpOff_PC: satış bitişi + GunOff ile aynı frame'de,
+        //    ama log sırası: önce GunOff_PC, sonra PumpOff_PC
+
         const bool completed_state =
             (snapshot.pump_state == ::core::PumpState::FillingCompleted) ||
             (snapshot.pump_state == ::core::PumpState::MaxAmount);
 
-        if (last_nozzle_out &&
-            !snapshot.nozzle_out &&
-            completed_state &&
-            snapshot.has_last_fill &&
-            snapshot.last_fill_volume_l > 0.0 &&
-            snapshot.last_card_auth_ok) {
+        const bool nozzle_edge_on  = (!last_nozzle_out && snapshot.nozzle_out);
+        const bool nozzle_edge_off = (last_nozzle_out && !snapshot.nozzle_out);
 
-            const double sale_liters = snapshot.last_fill_volume_l; // ölçek bozulmadan
+        // 1) GunOn_PC (tabanca pompadan ayrıldı)
+        if (nozzle_edge_on) {
+            recum12::utils::LogManager::UsageEntry e{};
+            e.processId = 0;
 
-            wait_recs  += 1;
-            vhec_count += 1;
-            repo_fill  += sale_liters;
+            // Kart bilgisi varsa snapshot üzerinden doldur
+            e.rfid = snapshot.last_card_uid;
+            if (auto urec = user_manager.findByRfid(snapshot.last_card_uid)) {
+                e.firstName = urec->firstName;
+                e.lastName  = urec->lastName;
+                e.plate     = urec->plate;
+                e.limit     = urec->limit;
+            }
 
-            // PC tarafı usage log: satış bitişi (PumpOff_PC)
+            e.fuel    = 0.0;
+            e.logCode = "GunOn_PC";
+            e.sendOk  = "NA";
+
+            const bool ok = log_manager.appendUsage(app_root, e);
+            if (!ok) {
+                std::cerr << "[LogManager] WARNING: GunOn_PC usage log yazılamadı\n";
+            }
+        }
+
+        // 2) GunOff_PC (tabanca depoya geri girdi)
+        //    + 3) PumpOff_PC (varsa gerçek satış)
+        if (nozzle_edge_off) {
+            // Önce GunOff_PC logu
             {
                 recum12::utils::LogManager::UsageEntry e{};
-                // Şimdilik transaction id bilmiyoruz → 0 sabit
                 e.processId = 0;
+                e.rfid      = snapshot.last_card_uid;
 
-                // Son başarılı AUTH bilgisi varsa kullanıcı alanlarını doldur
-                if (last_auth_ok) {
-                    e.rfid      = last_auth_uid;
-                    e.firstName = last_auth_first;
-                    e.lastName  = last_auth_last;
-                    e.plate     = last_auth_plate;
-                    e.limit     = last_auth_limit;
+                if (auto urec = user_manager.findByRfid(snapshot.last_card_uid)) {
+                    e.firstName = urec->firstName;
+                    e.lastName  = urec->lastName;
+                    e.plate     = urec->plate;
+                    e.limit     = urec->limit;
                 }
 
-                // Dolum miktarı (litre)
+                e.fuel    = 0.0;
+                e.logCode = "GunOff_PC";
+                e.sendOk  = "NA";
+
+                const bool ok = log_manager.appendUsage(app_root, e);
+                if (!ok) {
+                    std::cerr << "[LogManager] WARNING: GunOff_PC usage log yazılamadı\n";
+                }
+            }
+
+            // Ardından, gerçekten tamamlanmış bir satış varsa PumpOff_PC logu
+            if (completed_state &&
+                snapshot.has_last_fill &&
+                snapshot.last_fill_volume_l > 0.0 &&
+                snapshot.last_card_auth_ok) {
+
+                const double sale_liters = snapshot.last_fill_volume_l; // ölçek bozulmadan
+
+                wait_recs  += 1;
+                vhec_count += 1;
+                repo_fill  += sale_liters;
+
+                recum12::utils::LogManager::UsageEntry e{};
+                e.processId = 0;
+                e.rfid      = snapshot.last_card_uid;
+
+                if (auto urec = user_manager.findByRfid(snapshot.last_card_uid)) {
+                    e.firstName = urec->firstName;
+                    e.lastName  = urec->lastName;
+                    e.plate     = urec->plate;
+                    e.limit     = urec->limit;
+                }
+
                 e.fuel    = sale_liters;
                 e.logCode = "PumpOff_PC";
-                // timeStamp boş → appendUsage içinde ISO-8601 UTC doldurulacak
                 e.sendOk  = "NA";
 
                 const bool ok = log_manager.appendUsage(app_root, e);
@@ -416,10 +462,10 @@ AppRuntime::AppRuntime(MainWindow& ui_)
                     std::cerr << "[LogManager] WARNING: PumpOff_PC usage log yazılamadı"
                               << " (fuel_l=" << sale_liters << ")\n";
                 }
-            }
 
-            save_repo_log();
-           refresh_counters_on_ui();
+                save_repo_log();
+                refresh_counters_on_ui();
+            }
         }
 
         // Bir sonraki frame için nozzle geçmişini güncelle
@@ -629,9 +675,9 @@ AppRuntime::AppRuntime(MainWindow& ui_)
     };
 
     pump.onNozzle = [this](const recum12::hw::NozzleEvent& ev) {
-        pump_store.updateFromNozzle(ev);
-
-        // PC tarafı usage log: GunOn_PC / GunOff_PC (sadece OUT/IN transition)
+        // Önce GunOn/GunOff logla, sonra store'u güncelle:
+        // Böylece satış bitişinde yazılan PumpOff_PC log'u her zaman
+        // daha SONRA gelir.
         {
             const bool prev = nozzle_out_logged;
             const bool curr = ev.nozzle_out;
@@ -664,13 +710,14 @@ AppRuntime::AppRuntime(MainWindow& ui_)
             }
         }
 
+        pump_store.updateFromNozzle(ev);
+
         if (ev.nozzle_out) {
             rfid_auth.handleNozzleOut();
         } else {
             rfid_auth.handleNozzleInOrSaleFinished();
         }
     };
-
     // AUTH butonu handler'ı
     ui.set_auth_handler([this]() {
         std::cout << "[APP] AUTH handler: AUTHORIZE (DCC=0x06) gönderiliyor" << std::endl;
