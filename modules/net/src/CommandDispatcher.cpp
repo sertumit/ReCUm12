@@ -38,10 +38,154 @@ void CommandDispatcher::dispatch(const std::string& line,
         return;
     }
 
-    // TODO(v12.220.01-R1-R4): Burada V2 zarfına göre ayrıntılı
-    // JSON parse ve handler çağrı mantığı eklenecek.
-    outJson = R"({"type":"response","action":"unknown","status":"error",)"
-              R"("error":{"code":"E_NOT_IMPLEMENTED","message":"dispatcher skeleton"}})";
+    // Trimlenmiş versiyon
+    auto firstNonWs = [&]() -> std::string::size_type {
+        for (std::string::size_type i = 0; i < line.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(line[i]);
+            if (c != ' ' && c != '\t' && c != '\r' && c != '\n') return i;
+        }
+        return std::string::npos;
+    }();
+
+    if (firstNonWs == std::string::npos) {
+        outJson.clear();
+        return;
+    }
+
+    std::string::size_type lastNonWs = line.size();
+    while (lastNonWs > 0) {
+        unsigned char c = static_cast<unsigned char>(line[lastNonWs - 1]);
+        if (c != ' ' && c != '\t' && c != '\r' && c != '\n') break;
+        --lastNonWs;
+    }
+
+    std::string trimmed = line.substr(firstNonWs, lastNonWs - firstNonWs);
+
+    // Basit PING/PONG testi (PLAIN)
+    if (trimmed == "PING") {
+        outJson = "PONG";
+        return;
+    }
+
+    bool looksJson = !trimmed.empty() && trimmed.front() == '{';
+
+    if (!looksJson) {
+        // JSON olmayan satırlar için temel hata cevabı.
+        outJson = R"({"type":"response","action":"plain","status":"error",)"
+                  R"("error":{"code":"E_BAD_FORMAT","message":"expected JSON request"}})";
+        return;
+    }
+
+    // Basit action alanı çıkartıcı (tam JSON parser değil).
+    auto extractStringField = [](const std::string& json,
+                                 const std::string& key) -> std::string {
+        const std::string pattern = "\"" + key + "\"";
+        std::string::size_type pos = json.find(pattern);
+        if (pos == std::string::npos) return std::string{};
+
+        pos = json.find(':', pos + pattern.size());
+        if (pos == std::string::npos) return std::string{};
+
+        std::string::size_type q1 = json.find('"', pos + 1);
+        if (q1 == std::string::npos) return std::string{};
+        std::string::size_type q2 = json.find('"', q1 + 1);
+        if (q2 == std::string::npos) return std::string{};
+
+        return json.substr(q1 + 1, q2 - q1 - 1);
+    };
+
+    auto makeErrorResponse = [](const std::string& action,
+                                const std::string& code,
+                                const std::string& message) -> std::string {
+        std::string a = action.empty() ? "unknown" : action;
+        // Not: message içi tırnak/kaçış kontrolü yapılmıyor; sabit metinler kullanıyoruz.
+        return std::string("{\"type\":\"response\",\"action\":\"") + a +
+               "\",\"status\":\"error\",\"error\":{\"code\":\"" + code +
+               "\",\"message\":\"" + message + "\"}}";
+    };
+
+    auto makeOkResponseWithPayload = [](const std::string& action,
+                                        const std::string& payloadJson) -> std::string {
+        std::string a = action.empty() ? "unknown" : action;
+        // payloadJson'ın zaten geçerli JSON olduğu varsayılır.
+        std::string out = "{\"type\":\"response\",\"action\":\"" + a +
+                          "\",\"status\":\"ok\",\"payload\":";
+        out += payloadJson;
+        out += "}";
+        return out;
+    };
+
+    const std::string action = extractStringField(trimmed, "action");
+
+    if (action.empty()) {
+        outJson = makeErrorResponse("unknown",
+                                    "E_BAD_FORMAT",
+                                    "missing action");
+        return;
+    }
+    // Log sorguları: getLogs / logsQuery
+    //
+    // Not:
+    // - Şimdilik JSON içinden ayrıntılı filtre alanları parse edilmiyor.
+    // - Handler'a "varsayılan" filtrelerle gidiliyor:
+    //     from="", to="", limit=-1, rfid="", rfidEmpty=true,
+    //     plate="", logCodes=[].
+    // - İleride 'from' / 'to' alanları için beklenen tarih formatı:
+    //     "gg.aa.yyyy - hh:mm"
+    //   (örnek: "02.12.2025 - 07:30") şeklinde JSON payload'dan
+    //   okunacak ve GetLogsFn'e bu formatta iletilecek.
+    // - Bu, kablo/entegrasyon testleri için yeterli; ileride
+    //   CommandDispatcher_Integration_Guide'e göre ayrıntılı
+    //   parametre parse eklenecek.
+    if (action == "getLogs" || action == "logsQuery") {
+        if (!getLogsHandler_) {
+            outJson = makeErrorResponse(action,
+                                        "E_NO_HANDLER",
+                                        "getLogs handler not set");
+            return;
+        }
+
+        // filling_ guard:
+        // - Log okuma işlemi olduğu için dolum sırasında da
+        //   şimdilik izin veriyoruz. Gerekirse E_BUSY'e
+        //   çevrilebilir.
+
+        const std::string from;
+        const std::string to;
+        int limit = -1;
+        const std::string rfid;
+        bool rfidEmpty = true;
+        const std::string plate;
+        const std::vector<std::string> logCodes;
+
+        const std::string payload =
+            getLogsHandler_(from, to, limit, rfid, rfidEmpty, plate, logCodes);
+        outJson = makeOkResponseWithPayload(action, payload);
+        return;
+    }
+
+    // İlk canlı örnek: getUsers
+    if (action == "getUsers") {
+        if (!getUsersHandler_) {
+            outJson = makeErrorResponse(action,
+                                        "E_NO_HANDLER",
+                                        "getUsers handler not set");
+            return;
+        }
+
+        // filling_ guard: kullanıcı okuma komutu olduğu için şimdilik
+        // dolum sırasında da izin veriyoruz. İleride politika değişirse
+        // burada E_BUSY dönebiliriz.
+
+        const std::string payload = getUsersHandler_();
+        outJson = makeOkResponseWithPayload(action, payload);
+        return;
+    }
+
+    // Diğer action'lar şimdilik iskelet aşamasında.
+    outJson = makeErrorResponse(action,
+                                "E_NOT_IMPLEMENTED",
+                                "dispatcher skeleton");
 }
 
 void CommandDispatcher::setFilling(bool filling)

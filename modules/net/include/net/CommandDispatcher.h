@@ -23,6 +23,10 @@ public:
     using EventSink = std::function<void(const std::string& jline)>;
 
     // Log sorguları
+    // - 'from' / 'to' alanları için beklenen tarih/zaman formatı:
+    //     "gg.aa.yyyy - hh:mm"
+    //   (örnek: "02.12.2025 - 07:30")
+    //   veya boş string => ilgili sınır yok.    
     using GetLogsFn = std::function<std::string(
         const std::string& from,
         const std::string& to,
