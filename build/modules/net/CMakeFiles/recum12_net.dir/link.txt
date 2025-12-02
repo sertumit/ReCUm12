@@ -1,2 +1,0 @@
-/usr/bin/arm-linux-gnueabihf-ar qc librecum12_net.a CMakeFiles/recum12_net.dir/src/RemoteProto.cpp.o CMakeFiles/recum12_net.dir/src/BlynkClient.cpp.o
-/usr/bin/arm-linux-gnueabihf-ranlib librecum12_net.a
