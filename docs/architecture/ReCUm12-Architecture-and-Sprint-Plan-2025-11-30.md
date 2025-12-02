@@ -1,3 +1,144 @@
+# Sprint Notları – v12.210.02 (02.12.2025)
+
+Bu bölüm, 30.11.2025 sonrası sprintte yaşanan tüm gelişmeleri; RS485 akış düzeltmelerini, GunOn/GunOff/PumpOff sıralamasını, litre farkı analizini ve yeni yapılacaklar listesini kapsayan **güncel üst bilgi bloğudur**.
+
+---
+
+## ✔ Bu Sprintte Tamamlananlar (01–02 Aralık 2025)
+
+### **1. RS485 – GunOn/GunOff/PumpOff Sırası Tam Olarak Sabitlendi**
+- **Kural:** GunOff her zaman PumpOff’tan önce olacak.
+- `AppRuntime.cpp` içinde iki kritik düzenleme yapıldı:
+  - `PumpOff_PC` artık yalnızca **nozzle_out 1→0 geçişi ile aynı frame’de**, fakat **GunOff logundan sonra** tetikleniyor.
+  - Böylece tüm usage loglarında doğru kronolojik sıra sağlandı.
+
+### **2. Speed-flow litre farkı (0.7 ↔ 0.8) sorunu giderilmiş durumda**
+- Sorunun kaynağı: son 3×02 fill frame’i gelmeden PumpOff’ın erken yazılması.
+- Çözüm: `last_fill_volume_l` değeri artık **FILLING sırasında gelen ham totalizer frame’lerinden** besleniyor ve nozzle IN anında state kapanırken korunuyor.
+- Testlerde:
+  - 1. satış = 0.5 L → log 0.5 doğru
+  - 2. satış = 0.8 L → log 0.8 doğru
+
+### **3. Nozzle edge davranışı netleştirildi**
+- İlk nozzle OUT → GunOn_PC doğru çalışıyor.
+- Nozzle IN → GunOff_PC + PumpOff_PC sadece yetkili satış varsa tetikleniyor.
+- Yetkisiz satış sonrası edge’ler düzgün loglanıyor.
+
+### **4. GUI mesaj akışı stabilize edildi**
+- “Dolum Bekleniyor”, “Doluma başlayabilirsiniz”, “Dolum yapılıyor !!!”, “Dolum tamamlandı…” akışı testlerle doğrulandı.
+- Nozzle IN sonrası IDLE görünümüne dönüş artık daima doğru.
+
+### **5. RS485 device presence check AppRuntime’a entegre edildi**
+- `is_rs485_device_present()` fonksiyonu artık:
+  - Önce by-id portu kontrol ediyor
+  - Sonra /dev altında ttyUSB* arıyor
+- Hotplug hataları GUI’ye doğru yansıtılıyor.
+
+---
+
+## ➜ Bu Sprintten Sonraki Sprintlere Aktarılan Notlar
+
+### **A. Litre doğruluğu için kalan yapılacak:**
+- Parçalı dolum (örneğin 0.2 + 0.3 + 0.1) senaryolarında **son 3×02 totalizer tutarlılığı** tam doğrulanacak.
+- Bunun için “pompa simülatörü + protokol dokümanı + parçalı satış logu” üçlü karşılaştırması **bir sonraki sprintte yapılacak**.
+
+### **B. Sale_active latch’inin doğru kapanması**
+- Mevcut implementasyon: latch kapanışı nozzle IN geçişinde.
+- Kapanış doğru çalışıyor → Problem yok.
+- Yine de sonraki sprintte `PumpRuntimeStore` akışı diyagramı çıkarılıp dokümana eklenecek.
+
+### **C. CommandDispatcher entegrasyonu (R1–R4) hâlen bekliyor**
+- Bu sprintte RS485 akışı öncelikli olduğu için CommandDispatcher’a geçilmedi.
+- Bir sonraki sprintte R1’den başlanacak.
+
+### **D. LogManager’ın L2–L3 adımları sırada**
+- Usage log → tamam
+- Infra log → kısmi
+- Retention → sırada
+
+---
+
+## 📝 Yeni Eklenen Yapılacaklar (Backlog)
+
+1. **PumpRuntimeStore akış diyagramı hazırlanacak**  
+   (sale_active, baseline, last_fill, current_fill güncellemeleri)  
+2. **Parçalı dolum test senaryosu** hazırlanacak.  
+3. Pompa simülatörü + protokol karşılaştırmalı analiz.  
+4. RS485 fill frame’lerinin detaylı zamanlama ölçümü (20 ms → 100 ms penceresi).  
+5. Kullanıcıya ait son kart bilgisi + limit değerinin loglarda garanti edilmesi.  
+6. Litre yuvarlama/precision politikasının dokümante edilmesi (0.0–0.1 adımları).  
+
+---
+
+## 📌 İlerleme Disiplini – Kalıcı Kural
+
+- **Her patch → dosya yüklemesi ile başlayacak.**  
+- ChatGPT eski dosya kopyalarına bakmayacak.  
+- Kullanıcı dosya gönderir → ChatGPT SHA doğrular → minimal diff üretir.  
+- **Her adım:**  
+  `patch → uygulama → derleme → test → onay → sonraki patch`  
+- Pompa protokolü değişmedikçe `tools/` dizinleri dokunulmayacak.  
+- Kullanıcının belirlediği kronoloji korunacak.  
+
+---
+
+# 🔰 Yeni Sprint Başlangıç Mesajı (ChatGPT için)
+
+> “En güncel doküman ReCUm12-Architecture-and-Sprint-Plan.md’nin 02.12.2025 güncellemesidir.  
+> Bu sprintte RS485 akışı tamamen stabilize edildi, litre doğruluğu sağlandı, GunOn/GunOff/PumpOff sırası garanti altına alındı.  
+> Bir sonraki sprint başlangıcında pompa simülatör + protokol + parçalı dolum senaryosu karşılaştırmasına karar verilecek.  
+> Buradan devam edebiliriz.”
+
+---
+
+# (Aşağıdaki bölüm orijinal dokümanın aynen korunmuş halidir)
+
+# Sprint Notları – v12.200.01 (01.12.2025)
+
+Bu bölüm bir önceki sprintte yapılan işleri ve yeni sprint başlangıç bilgisini özetler.
+
+## ✔ Bu Sprintte Tamamlananlar
+- **Network bağlantı yönetimi (N1–N2) temel entegrasyonu tamamlandı.**
+  - Ethernet/WiFi link durumları ve IP adresleri periyodik olarak okunuyor.
+  - `AppRuntime` içine network + RS485 sağlık kontrolü entegre edildi.
+  - Glade ikon sistemine bağlandı (eth/wifi/rs485).
+- **RS485 hotplug sağlık kontrolü (kritik tamamlandı).**
+  - Adaptör çıkarıldığında: RS485 OFF ikonu → `Pompa Haberleşme Hatası`
+  - Tekrar takıldığında: RS485 ON ikonu → önceki mesaj yapısına dönülüyor.
+  - Bu kontrol `is_rs485_device_present()` + `pump.isOpen()` ile 2-sn poll içinde yapılıyor.
+- **Settings.json tabanlı remote + rs485 yapılandırma iskeleti entegre edildi.**
+- **AppRuntime yaşam döngüsü stabilize edildi.**
+
+## ➜ Bir Sonraki Sprinte Aktarılanlar
+- **Faz 3: CommandDispatcher entegrasyonu (R1–R4)**  
+  - `modules/net` → `CommandDispatcher`, `TcpServer`
+  - `AppRuntime` içine TCP server thread bağlanması
+  - İlk handler seti (getLogs, getUsers, rs485.readRaw)
+  - Filling guard entegrasyonu
+- **LogManager tam entegrasyonu (L2–L3)**  
+  - usage/infra log noktalarının güncellenmesi  
+  - retention mekanizması  
+- **RFID + limit entegrasyonu Faz 4 içinde ele alınacak**  
+  (Bu sprintte gözlem modunda bırakılmıştı.)
+
+## 🔜 Yeni Sprint Başlangıç Mesajı (ChatGPT için)
+> “En güncel mimari/plan dokümanı `docs/architecture/ReCUm12-Architecture-and-Sprint-Plan.md`.  
+> Bu sprint başlangıç versiyonu **v12.210.01**.  
+> Son sprintte N1–N2 tamamlandı, RS485 hotplug sağlık kontrolü çözüldü.  
+> Yeni sprintte öncelik R1–R4 (CommandDispatcher), ardından L2–L3 (LogManager).  
+> Buradan devam edelim.”
+
+## 📌 İlerleme Disiplini – Sprint için Kalıcı Not
+- Tüm patch’ler **dosya yüklemesi → SHA doğrulama → minimal diff** akışıyla yapılacak.
+- Asla eski kopya üzerinden diff üretilmeyecek.  
+- Her değişiklik adımı:  
+  **patch → uygulama → derleme → test → sonraki adıma geçiş**
+- RS485/Network davranışları için sadece fiziksel bağlantı + open() durumu baz alınacak.
+
+---
+
+# (Aşağıdaki bölüm orijinal dokümanın aynen korunmuş halidir)
+
 # ReCUm12 Mimari Özeti ve Sprint Planı  
 _Tarih: 30.11.2025_
 

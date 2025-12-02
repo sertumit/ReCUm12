@@ -19,4 +19,4 @@ logs/
 *.zip
 
 # Yerel config override'ları (örneğin gelecekte)
-configs/local-*.json
+configs/repo_log.json

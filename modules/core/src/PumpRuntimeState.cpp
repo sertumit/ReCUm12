@@ -22,7 +22,6 @@ void PumpRuntimeStore::updateFromPumpStatus(PumpState status)
 {
     s_.pump_state = status;
 
-    // pompa durumuna göre sale_active latch'ini güncelle
     switch (status) {
     case PumpState::Filling:
         // FILLING'e girerken yeni satış için baseline'ı sıfırla
@@ -32,12 +31,19 @@ void PumpRuntimeStore::updateFromPumpStatus(PumpState status)
         }
         s_.sale_active = true;
         break;
+
     case PumpState::FillingCompleted:
     case PumpState::MaxAmount:
+        // Dolum tamamlandı; ancak satış, tabanca pompaya girene kadar
+        // aktif kalsın. sale_active latch'i nozzle OUT→IN geçişine taşındı.
+        break;
+
     case PumpState::Reset:
     case PumpState::SwitchedOff:
+        // Hard stop durumları: satış latch'ini burada da kapatmak güvenli.
         s_.sale_active = false;
         break;
+
     default:
         // Diğer durumlarda latch'i olduğu gibi bırak
         break;
@@ -116,11 +122,16 @@ void PumpRuntimeStore::updateFromNozzle(const NozzleEvent& ev)
 
     // Nozzle OUT → IN geçişi:
     //  - Dolum döngüsü kapanıyor kabul edip current_fill'i sıfırla.
+    //  - Artık satış latch'ini de burada kapat (resmi litre son 3x02 frame'lerinden
+    //    gelmiş olacak).
     if (prev_nozzle_out && !s_.nozzle_out) {
         s_.current_fill_volume_l = 0.0;
         s_.has_current_fill      = false;
         // Bir sonraki satışta yeniden baseline alınacak
         have_fill_baseline_      = false;
+
+        // Satış burada bitti kabul ediliyor; sale_active latch'ini kapat.
+        s_.sale_active = false;
     }
 
     notifyStateChanged();
