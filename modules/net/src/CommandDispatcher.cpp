@@ -115,6 +115,26 @@ void CommandDispatcher::dispatch(const std::string& line,
         return out;
     };
 
+    // JSON string içinde kullanılacak metinler için basit kaçış fonksiyonu.
+    // Özellikle logs.csv içeriğini "content" alanına gömebilmek için kullanılır.
+    auto escapeJsonString = [](const std::string& in) -> std::string {
+        std::string out;
+        out.reserve(in.size() + 16);
+        for (unsigned char c : in) {
+            switch (c) {
+            case '\\': out += "\\\\"; break;
+            case '\"': out += "\\\""; break;
+            case '\n': out += "\\n";  break;
+            case '\r': out += "\\r";  break;
+            case '\t': out += "\\t";  break;
+            default:
+                out += static_cast<char>(c);
+                break;
+            }
+        }
+        return out;
+    };
+
     const std::string action = extractStringField(trimmed, "action");
 
     if (action.empty()) {
@@ -123,6 +143,35 @@ void CommandDispatcher::dispatch(const std::string& line,
                                     "missing action");
         return;
     }
+
+    // ---- getLogsRaw: YAT / debug için düz CSV çıktısı ----
+    //
+    // - V2 JSON zarfı YOK; doğrudan logs.csv içeriği gönderilir.
+    // - LineTcpClient::sendLine(outJson), içindeki '\n' karakterlerini
+    //   olduğu gibi kabloya yazar; YAT her satırı ayrı satır olarak görür.
+    // - Aynı GetLogsFn handler'ını kullanır (son 100 satır vs. mantığı
+    //   AppRuntime içindeki handler'da duruyor).
+    if (action == "getLogsRaw") {
+        if (!getLogsHandler_) {
+            outJson = makeErrorResponse(action,
+                                        "E_NO_HANDLER",
+                                        "getLogs handler not set");
+            return;
+        }
+
+        const std::string from;
+        const std::string to;
+        int               limit     = -1;
+        const std::string rfid;
+        bool              rfidEmpty = true;
+        const std::string plate;
+        const std::vector<std::string> logCodes;
+
+        // Handler'dan gelen CSV içeriğini olduğu gibi döndür.
+        outJson = getLogsHandler_(from, to, limit, rfid, rfidEmpty, plate, logCodes);
+        return;
+    }    
+    
     // Log sorguları: getLogs / logsQuery
     //
     // Not:
@@ -134,6 +183,9 @@ void CommandDispatcher::dispatch(const std::string& line,
     //     "gg.aa.yyyy - hh:mm"
     //   (örnek: "02.12.2025 - 07:30") şeklinde JSON payload'dan
     //   okunacak ve GetLogsFn'e bu formatta iletilecek.
+    // - GetLogsFn'den dönen string, başarılı dolum satırlarının
+    //   CSV içeriği olarak varsayılır ve payload içinde "content"
+    //   alanına gömülür.
     // - Bu, kablo/entegrasyon testleri için yeterli; ileride
     //   CommandDispatcher_Integration_Guide'e göre ayrıntılı
     //   parametre parse eklenecek.
@@ -158,13 +210,20 @@ void CommandDispatcher::dispatch(const std::string& line,
         const std::string plate;
         const std::vector<std::string> logCodes;
 
-        const std::string payload =
+        // Handler'dan gelen içerik: başarılı dolum satırları için CSV.
+        const std::string csvContent =
             getLogsHandler_(from, to, limit, rfid, rfidEmpty, plate, logCodes);
-        outJson = makeOkResponseWithPayload(action, payload);
+
+        // logs.csv zarfı: format + fileName + content
+        std::string payloadJson = "{\"format\":\"csv\",\"fileName\":\"logs.csv\",\"content\":\"";
+        payloadJson += escapeJsonString(csvContent);
+        payloadJson += "\"}";
+
+        outJson = makeOkResponseWithPayload(action, payloadJson);
         return;
     }
 
-    // İlk canlı örnek: getUsers
+    // Kullanıcı listesi: users.csv içeriği
     if (action == "getUsers") {
         if (!getUsersHandler_) {
             outJson = makeErrorResponse(action,
@@ -177,8 +236,16 @@ void CommandDispatcher::dispatch(const std::string& line,
         // dolum sırasında da izin veriyoruz. İleride politika değişirse
         // burada E_BUSY dönebiliriz.
 
-        const std::string payload = getUsersHandler_();
-        outJson = makeOkResponseWithPayload(action, payload);
+        // Handler'dan gelen içerik: users.csv içeriği (tam dosya veya
+        // belirli bir alt küme). logs.csv'deki gibi CSV formatında
+        // varsayılır ve payload içinde "content" alanına gömülür.
+        const std::string csvContent = getUsersHandler_();
+
+        std::string payloadJson = "{\"format\":\"csv\",\"fileName\":\"users.csv\",\"content\":\"";
+        payloadJson += escapeJsonString(csvContent);
+        payloadJson += "\"}";
+
+        outJson = makeOkResponseWithPayload(action, payloadJson);
         return;
     }
 

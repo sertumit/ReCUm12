@@ -108,22 +108,42 @@ void Rs485GuiAdapter::apply(const ::core::PumpRuntimeState& s)
 
     case PumpState::FillingCompleted:
     case PumpState::MaxAmount: {
-        // Satış tamamlandı: son tamamlanmış satışın litresini göster
-        const double use_l = has_last ? last_l : 0.0;
-        if (nozzle_out) {
-            // Nozzle hâlâ dışarıda → kullanıcıya tabancayı depoya koy mesajı.
-            ui_.apply_fill_done_view(true, use_l);
-            // Excel satır 6
-            status_.set_message(Channel::Pump,
-                "Dolum tamamlandı, tabancayı depoya yerleştiriniz.");
+        // ÖZEL KURAL:
+        //  - Eğer nozzle OUT ve current_fill mevcutsa (cur_l > 0),
+        //    protokol state'i 5 olsa bile GUI'de "dolum devam ediyor"
+        //    gibi göster. Bu, sahadaki pompanın DC1'i 5'e kilitlemesi
+        //    durumunda da canlı level/ikon görmemizi sağlar.
+        if (nozzle_out && has_cur && cur_l > 0.0) {
+            const double use_l = cur_l;
+            ui_.apply_filling_view(true, use_l);
+
+            if (use_l > 0.0) {
+                // Excel satır 4
+                status_.set_message(Channel::Pump,
+                    "Dolum yapılıyor !!!");
+            } else {
+                // Excel satır 5
+                status_.set_message(Channel::Pump,
+                    "Dolum başlatıldı...");
+            }
         } else {
-            // Nozzle IN → satış tamamen bitti, sistemi IDLE kabul et.
-            //  - last_l, fill_done_view ile lastfuel etiketine yazılıyor
-            //  - level her zamanki gibi 0.0 yapılıyor
-            ui_.apply_fill_done_view(false, use_l);
-            // Artık yeni işleme hazırız.
-            status_.set_message(Channel::Pump,
-                "İşlem Yapılabilir");
+            // Satış tamamlandı: son tamamlanmış satışın litresini göster
+            const double use_l = has_last ? last_l : 0.0;
+            if (nozzle_out) {
+                // Nozzle hâlâ dışarıda → kullanıcıya tabancayı depoya koy mesajı.
+                ui_.apply_fill_done_view(true, use_l);
+                // Excel satır 6
+                status_.set_message(Channel::Pump,
+                    "Dolum tamamlandı, tabancayı depoya yerleştiriniz.");
+            } else {
+                // Nozzle IN → satış tamamen bitti, sistemi IDLE kabul et.
+                //  - last_l, fill_done_view ile lastfuel etiketine yazılıyor
+                //  - level her zamanki gibi 0.0 yapılıyor
+                ui_.apply_fill_done_view(false, use_l);
+                // Artık yeni işleme hazırız.
+                status_.set_message(Channel::Pump,
+                    "İşlem Yapılabilir");
+            }
         }
         break;
     }

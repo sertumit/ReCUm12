@@ -1,5 +1,8 @@
 #include "AppRuntime.h"
 
+#include "net/CommandDispatcher.h"
+#include "net/LineTcpClient.h"
+
 #include <iostream>
 #include <mutex>
 #include <chrono>
@@ -9,6 +12,7 @@
 #include <ctime>
 #include <cctype>
 #include <glibmm/main.h>
+#include <memory>
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -110,6 +114,10 @@ bool is_rs485_device_present(const std::string& dev_path)
 }
 
 AuthGuiCache g_auth_gui_cache;
+
+// TCP/IP remote client + dispatcher (CommandDispatcher sprinti)
+std::shared_ptr<Net::CommandDispatcher> g_cmd_dispatcher;
+std::unique_ptr<Net::LineTcpClient>     g_net_client;
 
 // Worker thread'i
 //  - MIN-POLL (heart-beat) gönderiyor
@@ -281,6 +289,93 @@ AppRuntime::AppRuntime(MainWindow& ui_)
         std::cerr << "[LogManager] ERROR: ensureScaffold başarısız,"
                   << " APP_START log'u atlanıyor." << std::endl;
     }
+
+
+    // --- TCP/IP remote client & CommandDispatcher kurulumu ---
+    //
+    // Notlar:
+    // - Net::LineTcpClient, settings/configs/default_settings.json içindeki
+    //   remote.server_host / remote.server_port / remote.reconnect_ms
+    //   alanlarını kendi içinde okur (openSocket içinde).
+    // - Burada sadece:
+    //     * Global CommandDispatcher örneğini oluşturuyoruz.
+    //     * getLogs handler'ını bağlayıp logs.csv içeriğini döndürüyoruz.
+    //     * LineTcpClient'i Dispatcher ile iliştirip worker thread'ini
+    //       başlatıyoruz.
+    // - İleride:
+    //     * from/to/rfid/plate/logCodes/limit parametrelerini
+    //       parse edip filtreleme yapılacak.
+    {
+        using Net::CommandDispatcher;
+        using Net::LineTcpClient;
+
+        // Tek global dispatcher (TCP client thread'i ile paylaşılır)
+        g_cmd_dispatcher = std::make_shared<CommandDispatcher>();
+
+        // getLogs / logsQuery → logs.csv içerik sağlayıcı
+        g_cmd_dispatcher->setGetLogsHandler(
+            [this](const std::string& from,
+                   const std::string& to,
+                   int limit,
+                   const std::string& rfid,
+                   bool rfidEmpty,
+                   const std::string& plate,
+                   const std::vector<std::string>& logCodes) -> std::string {
+
+                // Şimdilik tüm filtre parametrelerini yok sayıyoruz.
+                (void)from; (void)to; (void)limit;
+                (void)rfid; (void)rfidEmpty;
+                (void)plate; (void)logCodes;
+
+                // Usage log path: app_root/logs/log_user/logs.csv
+                std::string path;
+                if (app_root.empty()) {
+                    path = "logs/log_user/logs.csv";
+                } else {
+                    path = (fs::path(app_root) / "logs" / "log_user" / "logs.csv").string();
+                }
+
+                std::ifstream in(path);
+                if (!in) {
+                    std::cerr << "[Net] getLogs: logs.csv okunamadı: " << path << std::endl;
+                    return std::string{};
+                }
+
+                // Basit tail: maksimum 100 satır (dosyanın son 100 satırı).
+                std::vector<std::string> lines;
+                std::string line;
+                while (std::getline(in, line)) {
+                    lines.push_back(line);
+                }
+
+                const std::size_t max_lines = 100;
+                std::size_t start = lines.size() > max_lines ? (lines.size() - max_lines) : 0;
+
+                std::ostringstream oss;
+                for (std::size_t i = start; i < lines.size(); ++i) {
+                    oss << lines[i];
+                    if (i + 1 < lines.size()) {
+                        oss << '\n';
+                    }
+                }
+                return oss.str();
+            });
+
+        // TCP/IP client: default host/port boş; gerçek değerler
+        // LineTcpClient::openSocket içinde default_settings.json'dan okunur.
+        g_net_client = std::make_unique<LineTcpClient>("", 0);
+
+        // Şimdilik GUI callback'ini sadece loglama için kullanıyoruz.
+        g_net_client->setGuiCallback(
+            [this](const std::string& msg) {
+                std::cout << "[NET] guiCb: " << msg << std::endl;
+            });
+
+        // Dispatcher'ı TCP client'e bağla (eventSink → sendLine köprüsü dahil)
+        g_net_client->setDispatcher(g_cmd_dispatcher);
+        g_net_client->start();
+    }
+
     // users.csv yükleme
     const std::string user_paths[] = {
         "configs/users.csv",
@@ -706,6 +801,15 @@ AppRuntime::AppRuntime(MainWindow& ui_)
 
 AppRuntime::~AppRuntime()
 {
+    // TCP/IP client'ı durdur (thread join + soket kapatma)
+    if (g_net_client) {
+        g_net_client->stop();
+        g_net_client.reset();
+    }
+
+    // Dispatcher global shared_ptr'ı serbest bırakılabilir
+    g_cmd_dispatcher.reset();
+
     // Network polling timer'ını kapat
     if (net_poll_conn.connected()) {
         net_poll_conn.disconnect();

@@ -393,6 +393,42 @@ PumpR07Protocol::makeMinAck(PumpR07Protocol::Byte addr) const
     return makeR07MinAck(addr);
 }
 
+// DC ailesi (0x31–0x3F) payload'larından nozzle OUT/IN bilgisini çıkaran küçük yardımcı.
+// Payload formatı (parseR07Frame sonrası):
+//   [TRANS][LNG][DATA...] blokları
+// Burada:
+//   - TRANS == 0x03
+//   - LNG   >= 4
+//   - DATA son baytı: NOZIO (bit4 → nozzle OUT/IN)
+static void emitNozzleFromDcPayload(
+    const std::vector<std::uint8_t>& payload,
+    const std::function<void(const NozzleEvent&)>& onNozzle)
+{
+    if (!onNozzle) {
+        return;
+    }
+
+    const std::size_t n = payload.size();
+    std::size_t i = 0;
+    while (i + 2 <= n) {
+        const std::uint8_t trans      = payload[i];
+        const std::uint8_t lng        = payload[i + 1];
+        const std::size_t  data_start = i + 2;
+        const std::size_t  end        = data_start + lng;
+        if (end > n) {
+            break; // eksik blok; daha ilerisine bakmayalım
+        }
+        // TRANS=0x03 ve en az 4 byte DATA: son DATA baytı NOZIO (bit4 → OUT/IN).
+        if (trans == 0x03u && lng >= 4u) {
+            const std::uint8_t nozio = payload[end - 1];
+            NozzleEvent ev{};
+            ev.nozzle_out = ((nozio & 0x10u) != 0u);
+            onNozzle(ev);
+            return; // ilk geçerli bloğu kullan
+        }
+        i = end;
+    }
+}
 void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
 {
     // Düşük seviye çözümleme: ham frame'i R07ParseResult'a çevir.
@@ -414,6 +450,14 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
     // İleride LogManager üzerinden CRC error log'u yazacağız.
     if (!res.crc_ok) {
         return;
+    }
+    // DC ailesi (0x31–0x3F) için: nozzle bilgisi varsa önce onu çıkar.
+    //  - 0x37 ve 0x38 için ayrı case'lerde özel mantık tanımlı; burada atlıyoruz
+    //    ki aynı frame için iki kez NozzleEvent üretmeyelim.
+    if (onNozzle &&
+        res.cmd >= 0x31u && res.cmd <= 0x3Fu &&
+        res.cmd != 0x37u && res.cmd != 0x38u) {
+        emitNozzleFromDcPayload(res.payload, onNozzle);
     }
 
     // Buradan sonra: "gerçek" R07 komutları.
@@ -454,7 +498,69 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
         }
         break;
     }    
-    case 0x01: { // Gerçek pompa DC1 (Pump Status, TRANS=0x01, 1 byte durum)
+
+    case 0x31: { // Gerçek pompa DC1 (status + ek alanlar, TRANS/LNG/DATA bloklu)
+        //
+        // Saha logu örneği:
+        //   50 31 01 01 05 03 04 00 10 00 01 ... 03 FA
+        //
+        // parseR07Frame sonrası payload:
+        //   [0]: TRANS=0x01
+        //   [1]: LNG=0x01
+        //   [2]: ST (pump status)
+        //   [3..]: diğer TRANS/LNG blokları (fiyat/nozzle vb.)
+        if (!onStatus || res.payload.empty()) {
+            break;
+        }
+
+        const auto&       p = res.payload;
+        const std::size_t n = p.size();
+        std::size_t       i = 0;
+
+        while (i + 2 <= n) {
+            const std::uint8_t trans = p[i];
+            const std::uint8_t lng   = p[i + 1];
+            const std::size_t  end   = static_cast<std::size_t>(i + 2 + lng);
+            if (end > n) {
+                break; // bozuk blok
+            }
+
+            if (trans == 0x01u && lng >= 0x01u) {
+                const std::uint8_t st = p[i + 2];
+
+                PumpState mapped = PumpState::Unknown;
+                // Dokümandaki "Pump Status" değerleri:
+                // 00h NOT PROGRAMMED
+                // 01h RESET
+                // 02h AUTHORIZED
+                // 04h FILLING
+                // 05h FILLING COMPLETED
+                // 06h MAX AMOUNT/VOLUME REACHED
+                // 07h SWITCHED OFF
+                // 0Bh PAUSED (→ SUSPENDED)
+                switch (st) {
+                case 0x00: mapped = PumpState::NotProgrammed;      break;
+                case 0x01: mapped = PumpState::Reset;              break;
+                case 0x02: mapped = PumpState::Authorized;         break;
+                case 0x04: mapped = PumpState::Filling;            break;
+                case 0x05: mapped = PumpState::FillingCompleted;   break;
+                case 0x06: mapped = PumpState::MaxAmount;          break;
+                case 0x07: mapped = PumpState::SwitchedOff;        break;
+                case 0x0B: mapped = PumpState::Suspended;          break;
+                default:   mapped = PumpState::Unknown;            break;
+                }
+
+                onStatus(mapped);
+                break; // ilk status bloğunu kullan
+            }
+
+            i = end;
+        }
+
+        break;
+    }
+
+    case 0x01: { // (legacy) Gerçek pompa DC1 (Pump Status, TRANS=0x01, 1 byte durum)
         if (res.len_actual == 1 && res.payload.size() == 1) {
             const std::uint8_t st = res.payload[0];
 
@@ -567,6 +673,40 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
 
                     onNozzle(ev);
                 }
+            }
+        }
+        break;
+    }
+    case 0x38: { // Ek nozzle durumu çerçevesi (saha: 50 38 01 02 10 00 ... 03 FA)
+        //
+        // Gerçek pompa log örnekleri:
+        //   50 38 01 02 10 00 00 69 03 FA
+        //   50 38 01 02 10 00 01 F9 03 FA
+        //
+        // parseR07Frame sonrası payload:
+        //   [TRANS][LNG][DATA0][DATA1]...
+        //
+        // Burada:
+        //   - TRANS ≈ 0x01
+        //   - LNG   ≈ 0x02
+        //   - DATA0 → NOZIO benzeri bir bayt (0x10 bit'i nozzle OUT/IN bilgisini taşıyor gibi)
+        //
+        // Bu frame'leri 0x37 içindeki NOZIO yorumuna paralel şekilde sadece nozzle
+        // OUT/IN bilgisini üretmek için kullanıyoruz.
+        if (onNozzle && !res.payload.empty()) {
+            const auto&        p = res.payload;
+            const std::size_t  n = p.size();
+            if (n >= 4) {
+                const std::uint8_t trans = p[0];
+                const std::uint8_t lng   = p[1];
+                (void)trans;
+                (void)lng;
+
+                const std::uint8_t nozio = p[2];
+                const bool nozzle_out    = ((nozio & 0x10u) != 0u);
+                NozzleEvent ev{};
+                ev.nozzle_out = nozzle_out;
+                onNozzle(ev);
             }
         }
         break;

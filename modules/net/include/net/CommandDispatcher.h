@@ -41,6 +41,9 @@ public:
                                               int timeout_ms)>;
 
     // Kullanıcı yönetimi
+    // - GetUsersFn'den dönen string, users.csv içeriği olarak
+    //   kabul edilir ve CommandDispatcher tarafında JSON response
+    //   payload'ı içinde "content" alanına gömülür.
     using GetUsersFn = std::function<std::string(void)>;
     using AddUserFn  = std::function<bool(
         int userId,int level,

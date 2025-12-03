@@ -59,14 +59,29 @@ void PumpRuntimeStore::updateFromFill(const FillInfo& fill)
 
     const double total = fill.volume_l;
 
-    if (s_.sale_active) {
-        // İlk FillInfo geldiğinde baseline al
-        if (!have_fill_baseline_) {
-            fill_baseline_volume_l_ = total;
-            have_fill_baseline_     = true;
-        }
+    // Satış başlangıcı latch'i:
+    //  - total > 0 ve AUTH aktifken ilk FillInfo geldiğinde sale_active'i yakala.
+    //  - baseline ve limit hesapları için kullanılan dahili sayaçları da sıfırla.
+    //
+    // Not:
+    //  - Gerçek pompa şu anda DC/CD1 statü frame'lerinden PumpState'i tam
+    //    güncellemediğimiz için FILLING state'ine güvenemiyoruz.
+    //  - Buna karşılık, 0'dan büyük bir FillInfo + auth_active kombinasyonu,
+    //    pratikte "satış başladı" sinyali veriyor.
+    if (!s_.sale_active && total > 0.0 && s_.auth_active) {
+        s_.sale_active           = true;
+        have_fill_baseline_      = false;
+        fill_baseline_volume_l_  = 0.0;
+        last_sale_volume_l_      = 0.0;
+        s_.current_fill_volume_l = 0.0;
+        s_.has_current_fill      = false;
+    }
 
-        double cur = total - fill_baseline_volume_l_;
+    if (s_.sale_active) {
+        // Mevcut pompa akışında DC2 (0x36) çerçevesi "satış net litre" bilgisi
+        // taşıyor; global totalizer değil. Bu nedenle baseline farkı yerine
+        // doğrudan gelen değeri kullanıyoruz.
+        double cur = total;
         if (cur < 0.0) {
             cur = 0.0;
         }
@@ -79,10 +94,9 @@ void PumpRuntimeStore::updateFromFill(const FillInfo& fill)
         s_.last_fill_volume_l = cur;
         s_.has_last_fill      = true;
 
-
         // Limit takibi: limit_liters > 0 ise kalan litreyi hesapla
         if (s_.limit_liters > 0.0) {
-            double remaining = s_.limit_liters - last_sale_volume_l_;
+            double remaining = s_.limit_liters - cur;
             if (remaining < 0.0) {
                 remaining = 0.0;
             }
