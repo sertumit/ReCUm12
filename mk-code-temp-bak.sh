@@ -5,13 +5,24 @@ set -u
 
 out_file="code_temp.txt"
 
-if [ "$#" -eq 0 ]; then
-  echo "Kullanim: $0 FILE [FILE ...]" >&2
-  exit 1
-fi
+echo "Dosya adlarini/yollarini sira ile girin."
+echo "Bitirmek icin bos satir birakip Enter'a basin."
+echo
 
-# Komut satirindaki tum argumanlari dosya listesi olarak kullan
-files=("$@")
+files=()
+while true; do
+  read -r -p "Dosya yolu: " path
+  # Bos satir -> cik
+  if [ -z "$path" ]; then
+    break
+  fi
+  files+=("$path")
+done
+
+if [ "${#files[@]}" -eq 0 ]; then
+  echo "Hic dosya girilmedi, cikiliyor."
+  exit 0
+fi
 
 # code_temp.txt olustur / sifirla
 > "$out_file"

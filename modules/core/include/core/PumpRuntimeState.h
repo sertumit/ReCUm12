@@ -64,6 +64,10 @@ struct PumpRuntimeState
     // Latch’ler
     bool           auth_active{false};
     bool           sale_active{false};
+
+    // R07 DC2 Generic Sale Detection için ek satış latch'leri
+    bool           sale_armed{false};              // GunOut + AUTH sonrası, DC2 bekleniyor
+    bool           fill_first_nonzero_seen{false}; // Bu satışta DC2 > 0 ilk kez görüldü mü?
 };
 
 // Thread-safe olmayan, basit bir store iskeleti.

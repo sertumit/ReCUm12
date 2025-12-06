@@ -1,7 +1,7 @@
 {
   "remote": {
     "reconnect_ms": 3000,
-    "server_host": "192.168.2.2",
+    "server_host": "192.168.6.6",
     "server_port": 5050,
     "ports": {
       "client": 5051

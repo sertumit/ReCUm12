@@ -36,6 +36,10 @@ void RfidAuthController::attach()
 
     // Pn532Reader kart okuma callback'i:
     reader_->onCardDetected = [this](const CardEvent& ev) {
+        // Bu kart okuma olayı, pompa tarafından gerçekten talep edilmiş mi?
+        // (handleNozzleOut → requestRead sonrası) sadece bu durumda GUI'de
+        // kart mesajı göstereceğiz; diğer tüm kart okumaları yalnızca log'a gider.
+        const bool gui_auth_flow = waiting_for_card_;
         waiting_for_card_ = false;
 
         // Debug: kart UID'sini ham haliyle logla
@@ -69,11 +73,12 @@ void RfidAuthController::attach()
             ctx.authorized = true;
             }
 
-        if (onAuthResult) {
-            onAuthResult(ctx);
-        }
+        // Not: Auth sonucu her durumda üst katmana bildirilir; böylece
+        // logs.csv gibi katmanlar kart okumasını kaydedebilir.
+        if (onAuthResult) { onAuthResult(ctx); }
+        //}
 
-        if (onAuthMessage) {
+        if (onAuthMessage && gui_auth_flow) {
             if (ctx.authorized) {
                 // Üst katman bu mesajı lblmsg vb. alana basabilir.
                 onAuthMessage("Yetkili Kullanıcı");
@@ -83,13 +88,16 @@ void RfidAuthController::attach()
         }
 
         // Kart yetkili ise pompaya AUTHORIZE (CD1, DCC=0x06) isteği gönder.
-        // Not: Şimdilik her kart için AUTHORIZE gidiyor; UserManager
-        // entegre olduğunda sadece gerçekten yetkili kartlarda çağrılacak.
+        // Not: Bu istek GUI tarafında sadece pompa gerçekten kart talep etmişse
+        // (gui_auth_flow==true) mesajlanır; aksi halde yalnızca protokol düzeyinde kalır.
         if (ctx.authorized && pump_) {
             std::cout << "[RFID/Auth] authorized → sending AUTHORIZE (DCC=0x06)"
                       << std::endl;
             pump_->sendStatusPoll(0x06);
-            if (onAuthMessage) {
+
+            // Ekrana "pompa authorize edildi" mesajı da yalnızca gerçek auth
+            // akışında gösterilir.
+            if (onAuthMessage && gui_auth_flow) {
                 onAuthMessage("Yetkili kart → pompa AUTHORIZE edildi");
             }
 

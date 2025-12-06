@@ -60,7 +60,7 @@ LineTcpClient::LineTcpClient(const std::string& host, int port)
 {
     // JSON yok/okunamazsa güvenli öntanımlar
     if (host_.empty())      host_ = "127.0.0.1";
-    if (port_ <= 0)         port_ = 5051;
+    if (port_ <= 0)         port_ = 5050; // command server default port
     if (reconnect_ms_ <= 0) reconnect_ms_ = 3000;
 }
 
@@ -85,6 +85,7 @@ void LineTcpClient::setDispatcher(std::shared_ptr<CommandDispatcher> d)
 int LineTcpClient::openSocket()
 {
     // runtime ayarlar (remote.server_host / remote.server_port / remote.ports.client / remote.reconnect_ms)
+    int local_client_port = -1; // isteğe bağlı: çıkış portunu sabitlemek için
     try {
         nlohmann::json cfg = load_settings_safe();
         if (cfg.contains("remote") && cfg["remote"].is_object()) {
@@ -95,19 +96,20 @@ int LineTcpClient::openSocket()
                 reconnect_ms_ = r["reconnect_ms"].get<int>();
             }
 
-            // host ve port (öncelik: server_host/server_port; aksi halde ports.client)
+            // Uzak command sunucusu: server_host + server_port
             if (r.contains("server_host") && r["server_host"].is_string()) {
                 host_ = r["server_host"].get<std::string>();
             }
+
+            if (r.contains("server_port") && r["server_port"].is_number_integer()) {
+                port_ = r["server_port"].get<int>();
+            }
+
+            // İsteğe bağlı client (yerel) portu: remote.ports.client
             if (r.contains("ports") && r["ports"].is_object()) {
                 const auto& p = r["ports"];
                 if (p.contains("client") && p["client"].is_number_integer()) {
-                    port_ = p["client"].get<int>();
-                }
-            }
-            if (r.contains("server_port") && r["server_port"].is_number_integer()) {
-                if (port_ <= 0) {
-                    port_ = r["server_port"].get<int>();
+                    local_client_port = p["client"].get<int>();
                 }
             }
         }
@@ -116,13 +118,28 @@ int LineTcpClient::openSocket()
     }
 
     if (host_.empty()) host_ = "127.0.0.1";
-    if (port_ <= 0)    port_ = 5051;
+    if (port_ <= 0)    port_ = 5050;
 
     int s = ::socket(AF_INET, SOCK_STREAM, 0);
     if (s < 0) {
         return -1;
     }
 
+    // İstenen local client port'u varsa, connect öncesi bind et
+    if (local_client_port > 0) {
+        int opt = 1;
+        ::setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+        sockaddr_in local {};
+        local.sin_family      = AF_INET;
+        local.sin_addr.s_addr = htonl(INADDR_ANY);
+        local.sin_port        = htons(static_cast<uint16_t>(local_client_port));
+
+        if (::bind(s, reinterpret_cast<sockaddr*>(&local), sizeof(local)) < 0) {
+            ::close(s);
+            return -1;
+        }
+    }
     sockaddr_in addr {};
     addr.sin_family = AF_INET;
     addr.sin_port   = htons(static_cast<uint16_t>(port_));

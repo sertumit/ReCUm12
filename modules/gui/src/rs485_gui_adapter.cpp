@@ -43,7 +43,16 @@ void Rs485GuiAdapter::apply(const ::core::PumpRuntimeState& s)
               << " last_l=" << (has_last ? last_l : -1.0)
               << std::endl;
 
-    switch (st) {
+    // Eğer current_fill_volume_l > 0.0 ise, pompa status frame'leri (CD1/DC1)
+    // henüz FILLING'e geçmemiş olsa bile GUI tarafında FILLING görünümünü
+    // zorla. Böylece sadece DC2/FILL frame'lerinden gelen litre bilgisiyle
+    // bile lbllevel canlı olarak güncellenir.
+    PumpState effective_st = st;
+    if (has_cur && cur_l > 0.0) {
+        effective_st = PumpState::Filling;
+    }
+
+    switch (effective_st) {
     case PumpState::NotProgrammed:
     case PumpState::Reset:
     case PumpState::SwitchedOff:
@@ -132,9 +141,9 @@ void Rs485GuiAdapter::apply(const ::core::PumpRuntimeState& s)
             if (nozzle_out) {
                 // Nozzle hâlâ dışarıda → kullanıcıya tabancayı depoya koy mesajı.
                 ui_.apply_fill_done_view(true, use_l);
-                // Excel satır 6
+                // C0: Dolum bitti, tabanca hâlâ dışarıda
                 status_.set_message(Channel::Pump,
-                    "Dolum tamamlandı, tabancayı depoya yerleştiriniz.");
+                    "Dolum bitti. Tabancayı pompaya koyunuz !!!");
             } else {
                 // Nozzle IN → satış tamamen bitti, sistemi IDLE kabul et.
                 //  - last_l, fill_done_view ile lastfuel etiketine yazılıyor

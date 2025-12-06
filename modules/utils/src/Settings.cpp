@@ -17,9 +17,9 @@ Settings::Settings()
 {
     // Kod içi varsayılanlar (default_settings.json ile uyumlu)
     remote_.ports.reconnect_ms = 3000;
-    remote_.ports.client_port  = 5051;
-    remote_.ports.server_host  = "192.168.2.2";
-    remote_.ports.server_port  = 5051;
+    remote_.ports.client_port  = 5051;            // cihaz tarafı sabit port
+    remote_.ports.server_host  = "192.168.6.6";  // remote server IP
+    remote_.ports.server_port  = 5050;           // command server port
 
     remote_.prefer_iface = {"eth0", "wlan0", "ppp0"};
 
@@ -61,16 +61,34 @@ Settings Settings::loadFromFile(const std::string& path)
         if (root.contains("remote") && root["remote"].is_object()) {
             const auto& jRemote = root["remote"];
 
+            auto& rports = settings.remote_.ports;
+
+            // Yeni şema:
+            // {
+            //   "remote": {
+            //     "reconnect_ms": ...,
+            //     "server_host": "...",
+            //     "server_port": ...,
+            //     "ports": { "client": ... },
+            //     "prefer_iface": [...]
+            //   }
+            // }
+
+            rports.reconnect_ms =
+                jRemote.value("reconnect_ms", rports.reconnect_ms);
+
+            rports.server_host =
+                jRemote.value("server_host", rports.server_host);
+
+            rports.server_port =
+                static_cast<std::uint16_t>(
+                    jRemote.value("server_port", rports.server_port));
+
             if (jRemote.contains("ports") && jRemote["ports"].is_object()) {
                 const auto& jp = jRemote["ports"];
-                settings.remote_.ports.reconnect_ms =
-                    jp.value("reconnect_ms", settings.remote_.ports.reconnect_ms);
-                settings.remote_.ports.client_port =
-                    static_cast<std::uint16_t>(jp.value("client", settings.remote_.ports.client_port));
-                settings.remote_.ports.server_host =
-                    jp.value("server_host", settings.remote_.ports.server_host);
-                settings.remote_.ports.server_port =
-                    static_cast<std::uint16_t>(jp.value("server_port", settings.remote_.ports.server_port));
+                rports.client_port =
+                    static_cast<std::uint16_t>(
+                        jp.value("client", rports.client_port));
             }
 
             if (jRemote.contains("prefer_iface") && jRemote["prefer_iface"].is_array()) {

@@ -11,6 +11,9 @@ const PumpRuntimeState& PumpRuntimeStore::state() const noexcept
 void PumpRuntimeStore::reset()
 {
     s_ = PumpRuntimeState{};
+    s_.sale_armed              = false;
+    s_.fill_first_nonzero_seen = false;
+
     fill_baseline_volume_l_ = 0.0;
     have_fill_baseline_     = false;
     last_sale_volume_l_     = 0.0;
@@ -21,6 +24,9 @@ void PumpRuntimeStore::reset()
 void PumpRuntimeStore::updateFromPumpStatus(PumpState status)
 {
     s_.pump_state = status;
+ 
+    // Durum değiştiğinde satış latch'lerini kaba hatlarıyla senkron tut.
+    // (Şimdilik yalnızca kaba reset; davranış değişikliği yok.)
 
     switch (status) {
     case PumpState::Filling:
@@ -30,6 +36,7 @@ void PumpRuntimeStore::updateFromPumpStatus(PumpState status)
             last_sale_volume_l_ = 0.0;
         }
         s_.sale_active = true;
+        s_.sale_armed  = true;
         break;
 
     case PumpState::FillingCompleted:
@@ -42,6 +49,9 @@ void PumpRuntimeStore::updateFromPumpStatus(PumpState status)
     case PumpState::SwitchedOff:
         // Hard stop durumları: satış latch'ini burada da kapatmak güvenli.
         s_.sale_active = false;
+        s_.sale_armed  = false;
+        s_.fill_first_nonzero_seen = false;
+
         break;
 
     default:
@@ -54,6 +64,11 @@ void PumpRuntimeStore::updateFromPumpStatus(PumpState status)
 
 void PumpRuntimeStore::updateFromFill(const FillInfo& fill)
 {
+    // Bu FillInfo, R07 DC2 akışındaki bir adım; burada sadece latch'leri besliyoruz.
+    if (!s_.fill_first_nonzero_seen && fill.volume_l > 0.0) {
+        s_.fill_first_nonzero_seen = true;
+    }
+    
     // Ham FillInfo'yu sakla (genellikle totalizer seviyesi)
     s_.last_fill = fill;
 
@@ -67,9 +82,12 @@ void PumpRuntimeStore::updateFromFill(const FillInfo& fill)
     //  - Gerçek pompa şu anda DC/CD1 statü frame'lerinden PumpState'i tam
     //    güncellemediğimiz için FILLING state'ine güvenemiyoruz.
     //  - Buna karşılık, 0'dan büyük bir FillInfo + auth_active kombinasyonu,
-    //    pratikte "satış başladı" sinyali veriyor.
-    if (!s_.sale_active && total > 0.0 && s_.auth_active) {
+    //    veya önceden "arm" edilmiş bir satış (sale_armed) pratikte "satış başladı"
+    //    sinyali veriyor.
+    if (!s_.sale_active && total > 0.0 && (s_.auth_active || s_.sale_armed)) {
         s_.sale_active           = true;
+        // Bu satış için arm bayrağını tükettik; artık aktif satış latch'i devrede.
+        s_.sale_armed           = false;
         have_fill_baseline_      = false;
         fill_baseline_volume_l_  = 0.0;
         last_sale_volume_l_      = 0.0;
@@ -134,6 +152,15 @@ void PumpRuntimeStore::updateFromNozzle(const NozzleEvent& ev)
     const bool prev_nozzle_out = s_.nozzle_out;
     s_.nozzle_out = ev.nozzle_out;
 
+    // Nozzle IN -> OUT geçişi: yeni bir satış potansiyeli doğuyor.
+    // Şu an için yalnızca latch'leri hazırlıyoruz, davranışı değiştirmiyoruz.
+    if (!prev_nozzle_out && s_.nozzle_out) {
+        // Tabanca yeni çıktı: AUTH varsa bu satış "arm" edilebilir.
+        if (s_.auth_active || s_.last_card_auth_ok) {
+            s_.sale_armed = true;
+        }
+        s_.fill_first_nonzero_seen = false;
+    }
     // Nozzle OUT → IN geçişi:
     //  - Dolum döngüsü kapanıyor kabul edip current_fill'i sıfırla.
     //  - Artık satış latch'ini de burada kapat (resmi litre son 3x02 frame'lerinden
@@ -144,8 +171,10 @@ void PumpRuntimeStore::updateFromNozzle(const NozzleEvent& ev)
         // Bir sonraki satışta yeniden baseline alınacak
         have_fill_baseline_      = false;
 
-        // Satış burada bitti kabul ediliyor; sale_active latch'ini kapat.
-        s_.sale_active = false;
+        // Satış burada bitti kabul ediliyor; satış latch'lerini kapat.
+        s_.sale_active            = false;
+        s_.sale_armed             = false;
+        s_.fill_first_nonzero_seen = false;
     }
 
     notifyStateChanged();
@@ -160,6 +189,17 @@ void PumpRuntimeStore::updateFromRfidAuth(const AuthContext& auth)
     s_.auth_active         = auth.authorized;
 
     // Karttan gelen limit bilgisini store'a taşı
+
+    // Yeni bir AUTH geldiyse, olası bir sonraki satış için latch'leri hazırlıyoruz.
+    if (auth.authorized) {
+        // Nozzle zaten OUT ise bu AUTH ile birlikte satış "arm" edilmiş sayılabilir.
+        s_.sale_armed              = s_.nozzle_out;
+        s_.fill_first_nonzero_seen = false;
+    } else {
+        s_.sale_armed = false;
+        s_.fill_first_nonzero_seen = false;
+    }
+
     s_.limit_liters = auth.limit_liters;
     s_.has_limit    = (auth.limit_liters > 0.0);
 

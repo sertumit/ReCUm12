@@ -9,8 +9,8 @@ namespace recum12::utils {
 struct RemotePortsConfig {
     int              reconnect_ms{3000};
     std::uint16_t    client_port{5051};
-    std::string      server_host{"192.168.2.2"};
-    std::uint16_t    server_port{5051};
+    std::string      server_host{"192.168.6.6"};
+    std::uint16_t    server_port{5050};
 };
 
 struct RemoteConfig {

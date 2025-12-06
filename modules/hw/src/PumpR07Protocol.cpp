@@ -429,6 +429,57 @@ static void emitNozzleFromDcPayload(
         i = end;
     }
 }
+
+// DC ailesi (0x31–0x3F) payload'larından VOL/AMO satış bilgisini çıkaran yardımcı.
+// Format (parseR07Frame sonrası):
+//   [TRANS][LNG][DATA...] blokları
+// Burada satış satırı için tipik blok:
+//   - TRANS = 0x02
+//   - LNG   >= 0x08
+//   - DATA[0:4] → VOL (x100, BCD)
+//   - DATA[4:8] → AMO (x100, BCD)
+//
+// Bu helper:
+//   - İlk geçerli bloğu bulur,
+//   - FillInfo'yu doldurur,
+//   - Bulduysa true, bulamadıysa false döner.
+static bool extractFillFromDcPayload(
+    const std::vector<std::uint8_t>& payload,
+    FillInfo&                        fi)
+{
+    const std::size_t n = payload.size();
+    std::size_t       i = 0;
+
+    while (i + 2 <= n) {
+        const std::uint8_t trans = payload[i];
+        const std::uint8_t lng   = payload[i + 1];
+        const std::size_t  end   =
+            static_cast<std::size_t>(i + 2 + lng);
+
+        if (end > n) {
+            break; // eksik blok; daha ilerisine bakmayalım
+        }
+
+        if (trans == 0x02u && lng >= 0x08u && (i + 2 + 8u) <= n) {
+            std::array<std::uint8_t, 4> vol_bcd{};
+            std::array<std::uint8_t, 4> amo_bcd{};
+            for (std::size_t k = 0; k < 4; ++k) {
+                vol_bcd[k] = payload[i + 2 + k];
+                amo_bcd[k] = payload[i + 2 + 4 + k];
+            }
+            const std::uint32_t vol_raw = bcd4ToInt(vol_bcd); // x100
+            const std::uint32_t amo_raw = bcd4ToInt(amo_bcd); // x100
+
+            fi.volume_l = static_cast<double>(vol_raw) / 100.0;
+            fi.amount   = static_cast<double>(amo_raw) / 100.0;
+            return true;
+        }
+
+        i = end;
+    }
+
+    return false;
+}
 void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
 {
     // Düşük seviye çözümleme: ham frame'i R07ParseResult'a çevir.
@@ -635,6 +686,18 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
         break;
     }
     case 0x37: { // DC3: nozzle + unit price (gerçek pompa DC3 çerçevesi)
+        // Ek: Bazı saha loglarında 0x37 komutu içinde de
+        //   TRANS=0x02, LNG=0x08 satış bloğu görülüyor:
+        //     50 37 02 08 00 00 11 53 00 01 15 30 ...
+        // Bu durumda, 0x36 ile aynı formatta VOL/AMO bilgisi taşıyor.
+        // Bunu da FillInfo olarak çekelim.
+        if (onFill && !res.payload.empty()) {
+            FillInfo fi{};
+            if (extractFillFromDcPayload(res.payload, fi)) {
+                onFill(fi);
+            }
+        }
+
         //
         // Sim log örneği:
         //   50 37 03 04 00 10 00 1D CRC CRC 03 FA
@@ -678,6 +741,18 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
         break;
     }
     case 0x38: { // Ek nozzle durumu çerçevesi (saha: 50 38 01 02 10 00 ... 03 FA)
+        // Ek: Yeni saha logunda 0x38 komutu da 0x37 ile aynı biçimde
+        //   TRANS=0x02, LNG=0x08 satış bloğu taşıyabiliyor:
+        //     50 38 02 08 00 00 11 53 00 01 15 30 ...
+        // Yani DC2/0x36 ile aynı VOL/AMO formatı burada da söz konusu.
+        // Bu durumda, litre/amount bilgisini çekip FillInfo olarak iletelim.
+        if (onFill && !res.payload.empty()) {
+            FillInfo fi{};
+            if (extractFillFromDcPayload(res.payload, fi)) {
+                onFill(fi);
+            }
+        }
+
         //
         // Gerçek pompa log örnekleri:
         //   50 38 01 02 10 00 00 69 03 FA
@@ -711,42 +786,22 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
         }
         break;
     }
+    // DC2 ailesi: 0x32–0x35 komutlarında da TRANS=0x02, LNG>=0x08 blokları
+    // ile VOL/AMO bilgisi gelebiliyor. Bunları da generic olarak FillInfo'ya
+    // çevirip onFill(fi) tetikleyelim.
+    case 0x32:
+    case 0x33:
+    case 0x34:
+    case 0x35:
     case 0x36: { // DC2: incremental sale (anlık VOL/AMO, x100 BCD)
         // Sim logundaki örnek:
         //   50 36 02 08 00 00 00 10 00 00 01 00 CRC CRC 03 FA
         // parseR07Frame sonrası payload:
         //   [TRANS=0x02][LNG=0x08][VOL_BCD(4)][AMO_BCD(4)]
         if (onFill && !res.payload.empty()) {
-            const auto& p = res.payload;
-            const std::size_t n = p.size();
-            std::size_t i = 0;
-            bool emitted = false;
-            while (i + 2 <= n) {
-                const std::uint8_t trans = p[i];
-                const std::uint8_t lng   = p[i + 1];
-                const std::size_t end    = static_cast<std::size_t>(i + 2 + lng);
-                if (end > n) {
-                    break; // eksik blok; devam etmeyelim
-                }
-                if (!emitted && trans == 0x02u && lng >= 0x08u) {
-                    // DATA[0:4] → VOL, DATA[4:8] → AMO (her ikisi de BCD x100)
-                    std::array<std::uint8_t, 4> vol_bcd{};
-                    std::array<std::uint8_t, 4> amo_bcd{};
-                    for (std::size_t k = 0; k < 4; ++k) {
-                        vol_bcd[k] = p[i + 2 + k];
-                        amo_bcd[k] = p[i + 2 + 4 + k];
-                    }
-                    const std::uint32_t vol_raw = bcd4ToInt(vol_bcd); // x100
-                    const std::uint32_t amo_raw = bcd4ToInt(amo_bcd); // x100
-
-                    FillInfo fi{};
-                    fi.volume_l = static_cast<double>(vol_raw) / 100.0;
-                    fi.amount   = static_cast<double>(amo_raw) / 100.0;
-
-                    onFill(fi);
-                    emitted = true;
-                }
-                i = end;
+            FillInfo fi{};
+            if (extractFillFromDcPayload(res.payload, fi)) {
+                onFill(fi);
             }
         }
         break;
@@ -798,34 +853,9 @@ void PumpR07Protocol::parseFrame(const PumpR07Protocol::Frame& frame)
         //      DATA[0:4] → VOL (ml x100, BCD)  → litre için /100
         //      DATA[4:8] → AMO (para x100, BCD)→ para birimi için /100
         if (onFill && !res.payload.empty()) {
-            const auto& p = res.payload;
-            const std::size_t n = p.size();
-            std::size_t i = 0;
-            bool emitted = false;
-            while (i + 2 <= n) {
-                const std::uint8_t trans = p[i];
-                const std::uint8_t lng   = p[i + 1];
-                const std::size_t end    = static_cast<std::size_t>(i + 2 + lng);
-                if (end > n) {
-                    break; // eksik blok; daha ilerisine bakmayalım
-                }
-                if (!emitted && trans == 0x02u && lng >= 0x08u) {
-                    // DATA[0:4] → VOL, DATA[4:8] → AMO (her ikisi de BCD x100)
-                    std::array<std::uint8_t, 4> vol_bcd{};
-                    std::array<std::uint8_t, 4> amo_bcd{};
-                    for (std::size_t k = 0; k < 4; ++k) {
-                        vol_bcd[k] = p[i + 2 + k];
-                        amo_bcd[k] = p[i + 2 + 4 + k];
-                    }
-                    const std::uint32_t vol_raw = bcd4ToInt(vol_bcd); // x100
-                    const std::uint32_t amo_raw = bcd4ToInt(amo_bcd); // x100
-                    FillInfo fi{};
-                    fi.volume_l = static_cast<double>(vol_raw) / 100.0;
-                    fi.amount   = static_cast<double>(amo_raw) / 100.0;
-                    onFill(fi);
-                    emitted = true;
-                }
-                i = end;
+            FillInfo fi{};
+            if (extractFillFromDcPayload(res.payload, fi)) {
+                onFill(fi);
             }
         }
         break;
